@@ -1,0 +1,2642 @@
+/* ==========================================================================
+   WINDOWS 95 PARADIGM: LIGHT & DARK RETRO THEMES
+   Dictionario e Motor Morphologic de Interlingua (IALA 51.500 parolas)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Design Tokens & Color Palettes
+   -------------------------------------------------------------------------- */
+
+:root,
+[data-theme="light"] {
+  /* Classic Windows 95 Light Palette */
+  --win-desktop: #008080;          /* Iconic Win95 Teal Desktop */
+  --win-bg: #c0c0c0;               /* Windows 3D Surface / Dialog Chassis */
+  --win-face: #c0c0c0;             /* Standard Button Face */
+  --win-light: #ffffff;            /* 3D Highlight (top-left) */
+  --win-light-soft: #dfdfdf;       /* Soft Highlight */
+  --win-shadow: #808080;           /* 3D Dark Shadow (bottom-right) */
+  --win-dark-shadow: #000000;      /* 3D Outer Black Shadow */
+  
+  --win-titlebar-bg: linear-gradient(90deg, #000080 0%, #1084d0 100%);
+  --win-titlebar-text: #ffffff;
+  --win-titlebar-btn: #c0c0c0;
+  
+  --win-text: #000000;
+  --win-text-secondary: #222222;
+  --win-text-muted: #555555;
+  
+  --win-field-bg: #ffffff;
+  --win-field-text: #000000;
+  
+  --win-highlight-bg: #000080;
+  --win-highlight-text: #ffffff;
+  
+  --win-accent-blue: #000080;
+  --win-accent-amber: #b45309;
+  --win-accent-emerald: #006600;
+  --win-accent-rose: #b91c1c;
+
+  /* Classic Windows 16-Color Lexical Tags */
+  --pos-sb-bg: #e6f0fa;
+  --pos-sb-color: #000080;
+  --pos-sb-border: #000080;
+
+  --pos-vb-bg: #e6f7e6;
+  --pos-vb-color: #006000;
+  --pos-vb-border: #006000;
+
+  --pos-adj-bg: #fef4e6;
+  --pos-adj-color: #8b3e00;
+  --pos-adj-border: #8b3e00;
+
+  --pos-adv-bg: #f4ecf9;
+  --pos-adv-color: #4b0082;
+  --pos-adv-border: #4b0082;
+
+  --pos-other-bg: #eaeaea;
+  --pos-other-color: #333333;
+  --pos-other-border: #666666;
+
+  /* Card and Panel Backgrounds */
+  --card-bg: #c0c0c0;
+  --card-hover-bg: #d0d0d0;
+  --card-selected-bg: #000080;
+  --card-selected-text: #ffffff;
+  
+  --banner-bg: #d4d0c8;
+  --table-header-bg: #c0c0c0;
+  --table-row-alt: #ffffff;
+
+  --modal-overlay: rgba(0, 0, 0, 0.45);
+}
+
+[data-theme="dark"] {
+  /* Windows 95 Twilight / High-Contrast Dark Palette */
+  --win-desktop: #11161d;          /* Deep Night Desktop */
+  --win-bg: #272a33;               /* Dark Slate Window Chassis */
+  --win-face: #323744;             /* Dark Slate Button Face */
+  --win-light: #525c70;            /* 3D Highlight for Dark Mode */
+  --win-light-soft: #3f4556;       /* Soft Highlight */
+  --win-shadow: #171920;           /* 3D Dark Shadow */
+  --win-dark-shadow: #0a0c10;      /* Outer Pure Shadow */
+
+  --win-titlebar-bg: linear-gradient(90deg, #183359 0%, #295594 100%);
+  --win-titlebar-text: #ffffff;
+  --win-titlebar-btn: #323744;
+
+  --win-text: #e2e8f0;
+  --win-text-secondary: #cbd5e1;
+  --win-text-muted: #94a3b8;
+
+  --win-field-bg: #141720;
+  --win-field-text: #f8fafc;
+
+  --win-highlight-bg: #2563eb;
+  --win-highlight-text: #ffffff;
+
+  --win-accent-blue: #38bdf8;
+  --win-accent-amber: #fbbf24;
+  --win-accent-emerald: #34d399;
+  --win-accent-rose: #f87171;
+
+  /* Night Palette Lexical Tags */
+  --pos-sb-bg: #172554;
+  --pos-sb-color: #60a5fa;
+  --pos-sb-border: #3b82f6;
+
+  --pos-vb-bg: #064e3b;
+  --pos-vb-color: #4ade80;
+  --pos-vb-border: #22c55e;
+
+  --pos-adj-bg: #451a03;
+  --pos-adj-color: #fcd34d;
+  --pos-adj-border: #f59e0b;
+
+  --pos-adv-bg: #3b0764;
+  --pos-adv-color: #c084fc;
+  --pos-adv-border: #a855f7;
+
+  --pos-other-bg: #1e293b;
+  --pos-other-color: #94a3b8;
+  --pos-other-border: #64748b;
+
+  /* Card and Panel Backgrounds */
+  --card-bg: #272a33;
+  --card-hover-bg: #323744;
+  --card-selected-bg: #1d4ed8;
+  --card-selected-text: #ffffff;
+
+  --banner-bg: #21252d;
+  --table-header-bg: #2c313d;
+  --table-row-alt: #181b24;
+
+  --modal-overlay: rgba(0, 0, 0, 0.7);
+}
+
+/* --------------------------------------------------------------------------
+   2. Reset & Typography
+   -------------------------------------------------------------------------- */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, 'MS Sans Serif', Geneva, Verdana, sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+  background-color: var(--win-desktop);
+  color: var(--win-text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 10px 24px;
+}
+
+/* --------------------------------------------------------------------------
+   3. Authentic Windows 95 Scrollbars
+   -------------------------------------------------------------------------- */
+
+::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+  background-color: var(--win-face);
+}
+
+::-webkit-scrollbar-track {
+  background-color: var(--win-bg);
+  background-image: 
+    repeating-linear-gradient(45deg, var(--win-face) 25%, transparent 25%, transparent 75%, var(--win-face) 75%, var(--win-face)),
+    repeating-linear-gradient(45deg, var(--win-face) 25%, var(--win-light-soft) 25%, var(--win-light-soft) 75%, var(--win-face) 75%, var(--win-face));
+  background-size: 2px 2px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--win-face);
+  border: 2px solid;
+  border-color: var(--win-light) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-light);
+  box-shadow: inset 1px 1px var(--win-light-soft), inset -1px -1px var(--win-shadow);
+}
+
+::-webkit-scrollbar-thumb:active {
+  border-color: var(--win-dark-shadow) var(--win-light) var(--win-light) var(--win-dark-shadow);
+  box-shadow: inset 1px 1px var(--win-dark-shadow);
+}
+
+/* --------------------------------------------------------------------------
+   4. Application Window Layout
+   -------------------------------------------------------------------------- */
+
+.app-layout {
+  max-width: 1240px;
+  width: 100%;
+  margin: 0 auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Main Windows 95 Outer Chassis */
+.win95-window {
+  background-color: var(--win-bg);
+  border: 3px solid;
+  border-color: var(--win-light) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-light);
+  box-shadow: 
+    inset 1px 1px var(--win-light-soft), 
+    inset -1px -1px var(--win-shadow),
+    3px 4px 12px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+}
+
+/* --------------------------------------------------------------------------
+   5. Window Title Bar
+   -------------------------------------------------------------------------- */
+
+.win95-titlebar {
+  background: var(--win-titlebar-bg);
+  color: var(--win-titlebar-text);
+  padding: 3px 4px 3px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  min-height: 26px;
+}
+
+.win95-titlebar-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.win95-titlebar-icon {
+  font-size: 14px;
+  display: inline-block;
+}
+
+.win95-titlebar-controls {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+/* 3D Title Bar Buttons */
+.win95-btn {
+  background: var(--win-face);
+  color: var(--win-text);
+  border: 2px solid;
+  border-color: var(--win-light) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-light);
+  box-shadow: inset 1px 1px var(--win-light-soft), inset -1px -1px var(--win-shadow);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  user-select: none;
+}
+
+.win95-btn:active,
+.win95-btn.active {
+  border-color: var(--win-dark-shadow) var(--win-light) var(--win-light) var(--win-dark-shadow);
+  box-shadow: inset 1px 1px var(--win-dark-shadow);
+  transform: translate(1px, 1px);
+}
+
+.win95-btn:focus-visible {
+  outline: 1px dotted var(--win-text);
+  outline-offset: -4px;
+}
+
+/* Title bar control buttons (min, max, close) */
+.win95-title-btn {
+  width: 18px;
+  height: 16px;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+  padding: 0;
+}
+
+.win95-title-btn.win95-close-btn {
+  font-family: 'Marlett', 'Segoe UI Symbol', sans-serif;
+  font-size: 11px;
+}
+
+/* Style & Theme Switchers in Title Bar (Windows 95) */
+.theme-toggle-btn,
+.style-toggle-btn {
+  width: auto;
+  height: 20px;
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  gap: 4px;
+  margin-right: 4px;
+  color: var(--win-text);
+}
+
+.theme-toggle-btn .theme-icon,
+.style-toggle-btn .style-icon {
+  font-size: 12px;
+}
+
+/* --------------------------------------------------------------------------
+   6. Windows 95 Menu Bar
+   -------------------------------------------------------------------------- */
+
+.win95-menubar {
+  background: var(--win-bg);
+  border-bottom: 2px solid;
+  border-color: var(--win-shadow) var(--win-shadow) var(--win-light) var(--win-shadow);
+  display: flex;
+  align-items: center;
+  padding: 2px 4px;
+  gap: 2px;
+  font-size: 12px;
+  user-select: none;
+}
+
+.win95-menu-item {
+  padding: 3px 8px;
+  cursor: pointer;
+  color: var(--win-text);
+  position: relative;
+}
+
+.win95-menu-item:hover,
+.win95-menu-item.active-menu {
+  background: var(--win-highlight-bg);
+  color: var(--win-highlight-text);
+}
+
+.win95-menu-container {
+  position: relative;
+  display: inline-block;
+}
+
+.win95-menu-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 210px;
+  background: var(--win-bg);
+  border: 2px solid;
+  border-color: var(--win-light) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-light);
+  box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  padding: 3px;
+}
+
+.win95-menu-dropdown.show {
+  display: block;
+}
+
+.win95-dropdown-item {
+  padding: 4px 10px;
+  font-size: 12px;
+  color: var(--win-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.win95-dropdown-item:hover {
+  background: var(--win-highlight-bg);
+  color: var(--win-highlight-text);
+}
+
+/* --------------------------------------------------------------------------
+   7. Software Header / Banner
+   -------------------------------------------------------------------------- */
+
+.header-hero {
+  padding: 14px 16px 8px;
+}
+
+.header-banner-panel {
+  background: var(--win-bg);
+  border: 2px groove var(--win-light);
+  padding: 12px 16px;
+}
+
+.header-badge-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  background: var(--win-field-bg);
+  border: 2px solid;
+  border-color: var(--win-shadow) var(--win-light) var(--win-light) var(--win-shadow);
+  box-shadow: inset 1px 1px var(--win-dark-shadow);
+  color: var(--win-accent-blue);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.badge-dot {
+  color: #10b981;
+}
+
+.title-gradient {
+  font-size: 1.65rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--win-text);
+  margin-bottom: 4px;
+}
+
+.subtitle-desc {
+  font-size: 12px;
+  color: var(--win-text-secondary);
+  line-height: 1.45;
+  max-width: 850px;
+}
+
+/* --------------------------------------------------------------------------
+   8. Property Sheet Navigation Tabs
+   -------------------------------------------------------------------------- */
+
+.view-tabs {
+  display: flex;
+  padding: 10px 14px 0;
+  gap: 3px;
+  background: var(--win-bg);
+  border-bottom: 2px solid var(--win-light);
+  position: relative;
+  z-index: 2;
+}
+
+.view-tab-btn {
+  background: var(--win-face);
+  color: var(--win-text);
+  border: 2px solid;
+  border-color: var(--win-light) var(--win-dark-shadow) var(--win-shadow) var(--win-light);
+  border-bottom: none;
+  padding: 6px 16px 5px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  outline: none;
+  user-select: none;
+}
+
+.view-tab-btn:hover:not(.active) {
+  background: var(--card-hover-bg);
+}
+
+.view-tab-btn.active {
+  background: var(--win-bg);
+  border-color: var(--win-light) var(--win-dark-shadow) var(--win-bg) var(--win-light);
+  margin-top: 0;
+  padding: 8px 18px 8px;
+  margin-bottom: -2px;
+  font-weight: 700;
+  z-index: 3;
+}
+
+.win95-tab-icon {
+  font-size: 13px;
+}
+
+/* --------------------------------------------------------------------------
+   9. Window Client Area & Group Boxes
+   -------------------------------------------------------------------------- */
+
+.win95-client-area {
+  background: var(--win-bg);
+  padding: 14px 16px 16px;
+  border-top: none;
+}
+
+/* Windows 95 GroupBox */
+.win95-groupbox {
+  border: 2px groove var(--win-light);
+  padding: 14px 14px 12px;
+  position: relative;
+  margin-bottom: 16px;
+  background: var(--win-bg);
+}
+
+.groupbox-legend {
+  position: absolute;
+  top: -9px;
+  left: 12px;
+  background: var(--win-bg);
+  padding: 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--win-text);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* --------------------------------------------------------------------------
+   10. Search Controls & Input Fields
+   -------------------------------------------------------------------------- */
+
+.search-container {
+  margin-bottom: 16px;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 100%;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px;
+  font-size: 14px;
+  pointer-events: none;
+  color: var(--win-text-muted);
+}
+
+/* Sunken 3D Text Input */
+.search-input {
+  width: 100%;
+  padding: 8px 36px 8px 34px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  background: var(--win-field-bg);
+  color: var(--win-field-text);
+  border: 2px solid;
+  border-color: var(--win-shadow) var(--win-light) var(--win-light) var(--win-shadow);
+  box-shadow: inset 1px 1px var(--win-dark-shadow), inset -1px -1px var(--win-light-soft);
+  outline: none;
+}
+
+.search-input:focus {
+  background: var(--win-field-bg);
+}
+
+.search-input::placeholder {
+  color: var(--win-text-muted);
+  font-weight: 400;
+  font-size: 12px;
+}
+
+.clear-btn {
+  position: absolute;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  font-size: 12px;
+  display: none;
+}
+
+/* Filters & Chips (Toolbar Buttons) */
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--win-shadow);
+  box-shadow: 0 1px 0 var(--win-light);
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.filter-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--win-text);
+  margin-right: 4px;
+}
+
+/* 3D Chip Buttons */
+.btn-chip {
+  background: var(--win-face);
+  color: var(--win-text);
+  border: 2px solid;
+  border-color: var(--win-light) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-light);
+  box-shadow: inset 1px 1px var(--win-light-soft), inset -1px -1px var(--win-shadow);
+  padding: 3px 8px;
+  font-size: 11px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+}
+
+.btn-chip:hover:not(.active) {
+  background: var(--card-hover-bg);
+}
+
+.btn-chip.active {
+  background: var(--win-face);
+  border-color: var(--win-dark-shadow) var(--win-light) var(--win-light) var(--win-dark-shadow);
+  box-shadow: inset 1px 1px var(--win-dark-shadow);
+  color: var(--win-accent-blue);
+  font-weight: 800;
+  outline: 1px dotted var(--win-text);
+  outline-offset: -3px;
+}
+
+/* --------------------------------------------------------------------------
+   11. Alphabet Navigator Toolbar
+   -------------------------------------------------------------------------- */
+
+.alphabet-groupbox {
+  padding: 12px 10px 10px;
+  margin-bottom: 14px;
+}
+
+.alphabet-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  justify-content: center;
+}
+
+.alpha-btn {
+  min-width: 26px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--win-face);
+  color: var(--win-text);
+  border: 2px solid;
+  border-color: var(--win-light) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-light);
+  box-shadow: inset 1px 1px var(--win-light-soft), inset -1px -1px var(--win-shadow);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.alpha-btn:hover:not(.active) {
+  background: var(--card-hover-bg);
+}
+
+.alpha-btn.active {
+  border-color: var(--win-dark-shadow) var(--win-light) var(--win-light) var(--win-dark-shadow);
+  box-shadow: inset 1px 1px var(--win-dark-shadow);
+  background: var(--win-face);
+  color: var(--win-accent-blue);
+  font-weight: 900;
+  outline: 1px dotted var(--win-text);
+  outline-offset: -3px;
+}
+
+/* --------------------------------------------------------------------------
+   12. Status Bar (Classic Sunken Multi-Pane)
+   -------------------------------------------------------------------------- */
+
+.win95-statusbar {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  margin-bottom: 14px;
+  font-size: 12px;
+  color: var(--win-text);
+}
+
+.status-pane {
+  background: var(--win-bg);
+  border: 2px solid;
+  border-color: var(--win-shadow) var(--win-light) var(--win-light) var(--win-shadow);
+  padding: 3px 8px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.stats-count {
+  flex: 1;
+  font-weight: 600;
+}
+
+.status-legend {
+  display: flex;
+  gap: 12px;
+  font-size: 11px;
+}
+
+.status-ready {
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--win-text-muted);
+}
+
+.stress-sample-regular {
+  border-bottom: 2.5px solid var(--win-accent-blue);
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.stress-sample-irregular {
+  border-bottom: 2.5px solid var(--win-accent-amber);
+  text-decoration: none;
+  font-weight: bold;
+}
+
+/* --------------------------------------------------------------------------
+   13. Word Cards Grid (3D Database Records)
+   -------------------------------------------------------------------------- */
+
+.words-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.word-card {
+  background: var(--card-bg);
+  border: 2px solid;
+  border-color: var(--win-light) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-light);
+  box-shadow: inset 1px 1px var(--win-light-soft), inset -1px -1px var(--win-shadow);
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  transition: none;
+}
+
+.word-card:hover {
+  background: var(--card-hover-bg);
+}
+
+.word-card:active {
+  border-color: var(--win-dark-shadow) var(--win-light) var(--win-light) var(--win-dark-shadow);
+  box-shadow: inset 1px 1px var(--win-dark-shadow);
+}
+
+.word-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow: hidden;
+}
+
+.word-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--win-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Phonetic Accents Underline */
+.word-text u,
+.modal-word-title u {
+  text-decoration: underline !important;
+  text-decoration-thickness: 2.5px !important;
+  text-underline-offset: 3px !important;
+  text-decoration-color: var(--win-accent-blue) !important;
+  color: var(--win-accent-blue) !important;
+  font-weight: 800 !important;
+}
+
+.word-text u.stress-irregular,
+.modal-word-title u.stress-irregular {
+  text-decoration: underline !important;
+  text-decoration-thickness: 2.5px !important;
+  text-underline-offset: 3px !important;
+  text-decoration-color: var(--win-accent-amber) !important;
+  color: var(--win-accent-amber) !important;
+  font-weight: 800 !important;
+}
+
+.word-extra-info {
+  font-size: 11px;
+  color: var(--win-text-muted);
+}
+
+.word-ipa {
+  font-family: 'Consolas', 'Lucida Console', monospace;
+  font-size: 11px;
+  color: var(--win-accent-blue);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* POS Tags (Sunken Badges) */
+.pos-tag {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 6px;
+  white-space: nowrap;
+  border: 1px solid;
+  border-radius: 0;
+  box-shadow: inset 1px 1px var(--win-shadow);
+}
+
+.pos-sb { background: var(--pos-sb-bg); color: var(--pos-sb-color); border-color: var(--pos-sb-border); }
+.pos-vb { background: var(--pos-vb-bg); color: var(--pos-vb-color); border-color: var(--pos-vb-border); }
+.pos-adj { background: var(--pos-adj-bg); color: var(--pos-adj-color); border-color: var(--pos-adj-border); }
+.pos-adv { background: var(--pos-adv-bg); color: var(--pos-adv-color); border-color: var(--pos-adv-border); }
+.pos-other { background: var(--pos-other-bg); color: var(--pos-other-color); border-color: var(--pos-other-border); }
+
+/* --------------------------------------------------------------------------
+   14. Pagination Controls
+   -------------------------------------------------------------------------- */
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 10px;
+  margin-bottom: 6px;
+}
+
+.page-btn {
+  background: var(--win-face);
+  border: 2px solid;
+  border-color: var(--win-light) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-light);
+  box-shadow: inset 1px 1px var(--win-light-soft), inset -1px -1px var(--win-shadow);
+  color: var(--win-text);
+  min-width: 28px;
+  height: 26px;
+  padding: 0 8px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 11px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-btn:hover:not(:disabled):not(.active) {
+  background: var(--card-hover-bg);
+}
+
+.page-btn.active {
+  border-color: var(--win-dark-shadow) var(--win-light) var(--win-light) var(--win-dark-shadow);
+  box-shadow: inset 1px 1px var(--win-dark-shadow);
+  color: var(--win-accent-blue);
+  outline: 1px dotted var(--win-text);
+  outline-offset: -3px;
+}
+
+.page-btn:disabled {
+  color: var(--win-text-muted);
+  text-shadow: 1px 1px var(--win-light);
+  cursor: default;
+  border-color: var(--win-light) var(--win-shadow) var(--win-shadow) var(--win-light);
+}
+
+/* --------------------------------------------------------------------------
+   15. Morphology & Conjugation Banner (System Analysis Box)
+   -------------------------------------------------------------------------- */
+
+.conjugation-banner {
+  background: var(--banner-bg);
+  border: 2px groove var(--win-light);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.banner-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.banner-title-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.banner-icon {
+  font-size: 18px;
+}
+
+.banner-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--win-text);
+}
+
+.banner-subtitle {
+  font-size: 12px;
+  color: var(--win-text-secondary);
+}
+
+.banner-badge {
+  background: var(--win-accent-blue);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border: 1px solid var(--win-dark-shadow);
+  text-transform: uppercase;
+}
+
+.conjugation-insights {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.insight-card {
+  background: var(--win-field-bg);
+  border: 2px solid;
+  border-color: var(--win-shadow) var(--win-light) var(--win-light) var(--win-shadow);
+  box-shadow: inset 1px 1px var(--win-dark-shadow);
+  padding: 6px 10px;
+}
+
+.insight-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--win-text-muted);
+}
+
+.insight-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--win-field-text);
+}
+
+.insight-val.accent {
+  color: var(--win-accent-blue);
+}
+
+/* Classic Windows ListView Table */
+.verb-table-container {
+  overflow-x: auto;
+  margin-top: 8px;
+  border: 2px solid;
+  border-color: var(--win-shadow) var(--win-light) var(--win-light) var(--win-shadow);
+  background: var(--win-field-bg);
+}
+
+.verb-paradigm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  text-align: left;
+  background: var(--win-field-bg);
+  color: var(--win-field-text);
+}
+
+.verb-paradigm-table th {
+  background: var(--table-header-bg);
+  color: var(--win-text);
+  font-weight: 700;
+  font-size: 11px;
+  padding: 4px 8px;
+  border: 2px solid;
+  border-color: var(--win-light) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-light);
+  box-shadow: inset 1px 1px var(--win-light-soft), inset -1px -1px var(--win-shadow);
+  user-select: none;
+}
+
+.verb-paradigm-table td {
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--win-light-soft);
+  border-right: 1px solid var(--win-light-soft);
+}
+
+.verb-paradigm-table tr:nth-child(even) td {
+  background-color: var(--table-row-alt);
+}
+
+.matched-form-highlight {
+  color: #b91c1c !important;
+  background: #fee2e2;
+  border: 1px solid #ef4444;
+  padding: 1px 5px;
+  font-weight: 800 !important;
+}
+
+/* --------------------------------------------------------------------------
+   16. Text Analyzer View
+   -------------------------------------------------------------------------- */
+
+.text-analyzer-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.analyzer-label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: var(--win-text);
+}
+
+.analyzer-textarea {
+  width: 100%;
+  min-height: 140px;
+  background: var(--win-field-bg);
+  color: var(--win-field-text);
+  border: 2px solid;
+  border-color: var(--win-shadow) var(--win-light) var(--win-light) var(--win-shadow);
+  box-shadow: inset 1px 1px var(--win-dark-shadow);
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
+}
+
+.analyzer-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.analyzer-actions-left {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-primary-action,
+.btn-secondary-action {
+  padding: 5px 12px;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.btn-primary-action {
+  color: var(--win-accent-blue);
+}
+
+.analyzer-output-container {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 14px;
+  margin-top: 6px;
+}
+
+@media (max-width: 860px) {
+  .analyzer-output-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.reader-hint-text {
+  font-size: 11px;
+  color: var(--win-text-muted);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.interactive-reader-content {
+  background: var(--win-field-bg);
+  color: var(--win-field-text);
+  border: 2px solid;
+  border-color: var(--win-shadow) var(--win-light) var(--win-light) var(--win-shadow);
+  box-shadow: inset 1px 1px var(--win-dark-shadow);
+  padding: 12px;
+  font-size: 15px;
+  line-height: 1.9;
+  min-height: 200px;
+}
+
+/* --------------------------------------------------------------------------
+   Interactive Word Chips & Category Coloring
+   -------------------------------------------------------------------------- */
+
+.reader-color-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 6px 8px;
+  background: var(--win-bg);
+  border: 1px solid var(--win-shadow);
+  font-size: 11px;
+}
+
+.legend-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.legend-vb { color: #047857; background: #e8f7f0; border-bottom: 2px solid #10b981; }
+.legend-vb .legend-dot { background: #10b981; }
+
+.legend-sb { color: #1d4ed8; background: #eff6ff; border-bottom: 2px solid #3b82f6; }
+.legend-sb .legend-dot { background: #3b82f6; }
+
+.legend-adj { color: #c2410c; background: #fff7ed; border-bottom: 2px solid #f97316; }
+.legend-adj .legend-dot { background: #f97316; }
+
+.legend-adv { color: #7e22ce; background: #faf5ff; border-bottom: 2px solid #a855f7; }
+.legend-adv .legend-dot { background: #a855f7; }
+
+.legend-num { color: #0284c7; background: #f0f9ff; border-bottom: 2px solid #0ea5e9; }
+.legend-num .legend-dot { background: #0ea5e9; }
+
+.legend-other { color: #334155; background: #f1f5f9; border-bottom: 2px solid #64748b; }
+.legend-other .legend-dot { background: #64748b; }
+
+.legend-unknown { color: #dc2626; background: #fef2f2; border-bottom: 2px dashed #ef4444; }
+.legend-unknown .legend-dot { background: #ef4444; }
+
+[data-theme="dark"] .legend-vb { color: #6ee7b7; background: rgba(16, 185, 129, 0.22); border-bottom-color: #34d399; }
+[data-theme="dark"] .legend-vb .legend-dot { background: #34d399; }
+
+[data-theme="dark"] .legend-sb { color: #93c5fd; background: rgba(59, 130, 246, 0.22); border-bottom-color: #60a5fa; }
+[data-theme="dark"] .legend-sb .legend-dot { background: #60a5fa; }
+
+[data-theme="dark"] .legend-adj { color: #fdba74; background: rgba(249, 115, 22, 0.22); border-bottom-color: #fb923c; }
+[data-theme="dark"] .legend-adj .legend-dot { background: #fb923c; }
+
+[data-theme="dark"] .legend-adv { color: #d8b4fe; background: rgba(168, 85, 247, 0.22); border-bottom-color: #c084fc; }
+[data-theme="dark"] .legend-adv .legend-dot { background: #c084fc; }
+
+[data-theme="dark"] .legend-num { color: #38bdf8; background: rgba(14, 165, 233, 0.22); border-bottom-color: #38bdf8; }
+[data-theme="dark"] .legend-num .legend-dot { background: #38bdf8; }
+
+[data-theme="dark"] .legend-other { color: #cbd5e1; background: rgba(148, 163, 184, 0.18); border-bottom-color: #94a3b8; }
+[data-theme="dark"] .legend-other .legend-dot { background: #94a3b8; }
+
+[data-theme="dark"] .legend-unknown { color: #fca5a5; background: rgba(239, 68, 68, 0.22); border-bottom-color: #f87171; }
+[data-theme="dark"] .legend-unknown .legend-dot { background: #f87171; }
+
+/* Interactive Word Chips */
+.txt-token {
+  display: inline-block;
+  padding: 1px 5px;
+  margin: 2px 2px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.16s ease-in-out;
+  position: relative;
+  border-bottom: 3px solid transparent;
+}
+
+/* Specific Category Styling - Light Mode */
+.txt-token.token-vb {
+  color: #047857;
+  background: #e8f7f0;
+  border-bottom: 3px solid #10b981;
+}
+.txt-token.token-vb:hover {
+  background: #d1fae5;
+  color: #065f46;
+  border-bottom-color: #059669;
+  box-shadow: 0 0 11px rgba(16, 185, 129, 0.8), 0 3px 6px rgba(16, 185, 129, 0.5);
+  transform: translateY(-1px);
+}
+
+.txt-token.token-sb {
+  color: #1d4ed8;
+  background: #eff6ff;
+  border-bottom: 3px solid #3b82f6;
+}
+.txt-token.token-sb:hover {
+  background: #dbeafe;
+  color: #1e40af;
+  border-bottom-color: #2563eb;
+  box-shadow: 0 0 11px rgba(59, 130, 246, 0.8), 0 3px 6px rgba(59, 130, 246, 0.5);
+  transform: translateY(-1px);
+}
+
+.txt-token.token-adj {
+  color: #c2410c;
+  background: #fff7ed;
+  border-bottom: 3px solid #f97316;
+}
+.txt-token.token-adj:hover {
+  background: #ffedd5;
+  color: #9a3412;
+  border-bottom-color: #ea580c;
+  box-shadow: 0 0 11px rgba(249, 115, 22, 0.85), 0 3px 6px rgba(249, 115, 22, 0.5);
+  transform: translateY(-1px);
+}
+
+.txt-token.token-adv {
+  color: #7e22ce;
+  background: #faf5ff;
+  border-bottom: 3px solid #a855f7;
+}
+.txt-token.token-adv:hover {
+  background: #f3e8ff;
+  color: #6b21a8;
+  border-bottom-color: #9333ea;
+  box-shadow: 0 0 11px rgba(168, 85, 247, 0.85), 0 3px 6px rgba(168, 85, 247, 0.5);
+  transform: translateY(-1px);
+}
+
+.txt-token.token-num {
+  color: #0284c7;
+  background: #f0f9ff;
+  border-bottom: 3px solid #0ea5e9;
+}
+.txt-token.token-num:hover {
+  background: #e0f2fe;
+  color: #0369a1;
+  border-bottom-color: #0284c7;
+  box-shadow: 0 0 11px rgba(14, 165, 233, 0.85), 0 3px 6px rgba(14, 165, 233, 0.5);
+  transform: translateY(-1px);
+}
+
+.txt-token.token-other {
+  color: #334155;
+  background: #f1f5f9;
+  border-bottom: 3px solid #64748b;
+}
+.txt-token.token-other:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+  border-bottom-color: #475569;
+  box-shadow: 0 0 9px rgba(100, 116, 139, 0.75), 0 2px 5px rgba(100, 116, 139, 0.45);
+  transform: translateY(-1px);
+}
+
+.txt-token.token-unknown {
+  color: #dc2626;
+  background: #fef2f2;
+  border-bottom: 3px dashed #ef4444;
+}
+.txt-token.token-unknown:hover {
+  background: #fee2e2;
+  color: #991b1b;
+  border-bottom-color: #dc2626;
+  box-shadow: 0 0 11px rgba(239, 68, 68, 0.85), 0 3px 6px rgba(239, 68, 68, 0.55);
+  transform: translateY(-1px);
+}
+
+/* Dark Mode Tokens */
+[data-theme="dark"] .txt-token.token-vb {
+  color: #6ee7b7;
+  background: rgba(16, 185, 129, 0.22);
+  border-bottom-color: #34d399;
+}
+[data-theme="dark"] .txt-token.token-vb:hover {
+  background: rgba(16, 185, 129, 0.38);
+  color: #a7f3d0;
+  box-shadow: 0 0 13px rgba(52, 211, 153, 0.9), 0 3px 7px rgba(52, 211, 153, 0.6);
+}
+
+[data-theme="dark"] .txt-token.token-sb {
+  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.22);
+  border-bottom-color: #60a5fa;
+}
+[data-theme="dark"] .txt-token.token-sb:hover {
+  background: rgba(59, 130, 246, 0.38);
+  color: #bfdbfe;
+  box-shadow: 0 0 13px rgba(96, 165, 250, 0.9), 0 3px 7px rgba(96, 165, 250, 0.6);
+}
+
+[data-theme="dark"] .txt-token.token-adj {
+  color: #fdba74;
+  background: rgba(249, 115, 22, 0.22);
+  border-bottom-color: #fb923c;
+}
+[data-theme="dark"] .txt-token.token-adj:hover {
+  background: rgba(249, 115, 22, 0.38);
+  color: #ffedd5;
+  box-shadow: 0 0 13px rgba(251, 146, 60, 0.9), 0 3px 7px rgba(251, 146, 60, 0.6);
+}
+
+[data-theme="dark"] .txt-token.token-adv {
+  color: #d8b4fe;
+  background: rgba(168, 85, 247, 0.22);
+  border-bottom-color: #c084fc;
+}
+[data-theme="dark"] .txt-token.token-adv:hover {
+  background: rgba(168, 85, 247, 0.38);
+  color: #f3e8ff;
+  box-shadow: 0 0 13px rgba(192, 132, 252, 0.9), 0 3px 7px rgba(192, 132, 252, 0.6);
+}
+
+[data-theme="dark"] .txt-token.token-num {
+  color: #38bdf8;
+  background: rgba(14, 165, 233, 0.22);
+  border-bottom-color: #38bdf8;
+}
+[data-theme="dark"] .txt-token.token-num:hover {
+  background: rgba(14, 165, 233, 0.38);
+  color: #bae6fd;
+  box-shadow: 0 0 13px rgba(56, 189, 248, 0.9), 0 3px 7px rgba(56, 189, 248, 0.6);
+}
+
+[data-theme="dark"] .txt-token.token-other {
+  color: #cbd5e1;
+  background: rgba(148, 163, 184, 0.16);
+  border-bottom-color: #94a3b8;
+}
+[data-theme="dark"] .txt-token.token-other:hover {
+  background: rgba(148, 163, 184, 0.32);
+  color: #f8fafc;
+  box-shadow: 0 0 11px rgba(148, 163, 184, 0.8), 0 3px 6px rgba(148, 163, 184, 0.55);
+}
+
+[data-theme="dark"] .txt-token.token-unknown {
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.22);
+  border-bottom-color: #f87171;
+}
+[data-theme="dark"] .txt-token.token-unknown:hover {
+  background: rgba(239, 68, 68, 0.38);
+  color: #fef2f2;
+  box-shadow: 0 0 13px rgba(248, 113, 113, 0.95), 0 3px 7px rgba(248, 113, 113, 0.65);
+}
+
+/* Active Selected Token */
+.txt-token.active-token {
+  outline: 2px solid currentColor;
+  outline-offset: 1px;
+  font-weight: 700;
+  z-index: 3;
+}
+.txt-token.active-token.token-vb { box-shadow: 0 0 14px rgba(16, 185, 129, 0.95), 0 3px 6px rgba(16, 185, 129, 0.6); }
+.txt-token.active-token.token-sb { box-shadow: 0 0 14px rgba(59, 130, 246, 0.95), 0 3px 6px rgba(59, 130, 246, 0.6); }
+.txt-token.active-token.token-adj { box-shadow: 0 0 14px rgba(249, 115, 22, 0.95), 0 3px 6px rgba(249, 115, 22, 0.6); }
+.txt-token.active-token.token-adv { box-shadow: 0 0 14px rgba(168, 85, 247, 0.95), 0 3px 6px rgba(168, 85, 247, 0.6); }
+.txt-token.active-token.token-num { box-shadow: 0 0 14px rgba(14, 165, 233, 0.95), 0 3px 6px rgba(14, 165, 233, 0.6); }
+.txt-token.active-token.token-other { box-shadow: 0 0 12px rgba(100, 116, 139, 0.9), 0 3px 6px rgba(100, 116, 139, 0.55); }
+.txt-token.active-token.token-unknown { box-shadow: 0 0 14px rgba(239, 68, 68, 0.95), 0 3px 6px rgba(239, 68, 68, 0.65); }
+
+/* Word Inspector Card */
+.word-inspector-card {
+  align-self: start;
+}
+
+.inspector-placeholder {
+  text-align: center;
+  color: var(--win-text-muted);
+  padding: 24px 10px;
+  font-size: 12px;
+}
+
+.inspector-icon {
+  font-size: 28px;
+  margin-bottom: 6px;
+}
+
+.analysis-stats-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.stat-badge {
+  background: var(--win-bg);
+  border: 2px solid;
+  border-color: var(--win-shadow) var(--win-light) var(--win-light) var(--win-shadow);
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* --------------------------------------------------------------------------
+   17. Footer Info (Status Bar Bottom)
+   -------------------------------------------------------------------------- */
+
+.win95-statusbar-bottom {
+  border-top: 2px solid;
+  border-color: var(--win-shadow) var(--win-light) var(--win-light) var(--win-shadow);
+  padding: 8px 12px;
+  font-size: 11px;
+  color: var(--win-text-muted);
+  line-height: 1.4;
+  background: var(--win-bg);
+  text-align: center;
+}
+
+.win95-statusbar-bottom a {
+  color: var(--win-accent-blue);
+  text-decoration: underline;
+}
+
+/* --------------------------------------------------------------------------
+   18. Windows 95 Modal Dialog Box
+   -------------------------------------------------------------------------- */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--modal-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 10000;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.modal-backdrop.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.win95-dialog {
+  background: var(--win-bg);
+  border: 3px solid;
+  border-color: var(--win-light) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-light);
+  box-shadow: 
+    inset 1px 1px var(--win-light-soft), 
+    inset -1px -1px var(--win-shadow),
+    4px 6px 20px rgba(0, 0, 0, 0.5);
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-titlebar {
+  flex-shrink: 0;
+}
+
+.modal-body-wrapper {
+  padding: 14px 16px;
+  overflow-y: auto;
+}
+
+.modal-word-header {
+  margin-bottom: 12px;
+}
+
+.modal-word-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.modal-word-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--win-text);
+}
+
+.modal-pronunciation-text {
+  font-size: 12px;
+  color: var(--win-text-muted);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.win95-inset-box {
+  background: var(--win-field-bg);
+  color: var(--win-field-text);
+  border: 2px solid;
+  border-color: var(--win-shadow) var(--win-light) var(--win-light) var(--win-shadow);
+  box-shadow: inset 1px 1px var(--win-dark-shadow);
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+
+.modal-section-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--win-text-muted);
+  margin-bottom: 6px;
+}
+
+.definition-box {
+  font-size: 13px;
+  line-height: 1.5;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.definition-box a {
+  color: var(--win-accent-blue);
+  text-decoration: underline;
+}
+
+.modal-footer-btns {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.modal-ok-btn {
+  padding: 6px 18px;
+  font-weight: 700;
+}
+
+/* --------------------------------------------------------------------------
+   19. Responsive Adjustments
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 640px) {
+  body {
+    padding: 4px 4px 12px;
+  }
+  
+  .win95-titlebar-label {
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .theme-toggle-btn .theme-label,
+  .style-toggle-btn .style-label {
+    display: none;
+  }
+
+  .title-gradient {
+    font-size: 1.35rem;
+  }
+
+  .words-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .status-legend {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   20. THEMA MODERNO: BIBLIOTECA & ARCHIVO CLÁSICO (HUMANISMO BIBLIÓFILO)
+   Enfoque 3: Tipografía editorial (Lora, Cinzel, Plus Jakarta Sans),
+   estética de folio de archivo, paleta orgánica de pergamino, tinta carbón,
+   verde laurel, oro envejecido y cuero de encuadernación.
+   Soporta variantes: Clare (Luz de día) y Obscur (Lectura nocturna).
+   ========================================================================== */
+
+/* Modern Theme Variables - Clare (Default Light Mode) */
+body[data-style="modern"] {
+  --bib-bg: #F6F3EC;
+  --bib-paper: #FCFAF6;
+  --bib-paper-elevated: #FFFFFF;
+  --bib-border: #E3DCCE;
+  --bib-border-subtle: #EFE9DE;
+  --bib-border-focus: #1E4933;
+  
+  --bib-ink: #1E1A17;
+  --bib-ink-secondary: #595148;
+  --bib-ink-muted: #867C70;
+  
+  --bib-laurel: #1E4933;
+  --bib-laurel-bg: #E8F2EC;
+  --bib-laurel-border: #BCD9C8;
+  
+  --bib-gold: #966E2B;
+  --bib-gold-bg: #FAF2E3;
+  --bib-gold-border: #EBD6AF;
+  
+  --bib-burgundy: #7c3aed;
+  --bib-burgundy-bg: #f5f3ff;
+  --bib-burgundy-border: #ddd6fe;
+  
+  --bib-indigo: #1C3E63;
+  --bib-indigo-bg: #ECF3FB;
+  --bib-indigo-border: #C6DBEE;
+
+  --bib-shadow-card: 0 1px 3px rgba(30, 26, 23, 0.04), 0 3px 10px rgba(30, 26, 23, 0.03);
+  --bib-shadow-hover: 0 6px 20px -3px rgba(30, 26, 23, 0.08), 0 2px 6px -1px rgba(30, 26, 23, 0.04);
+  --bib-shadow-window: 0 16px 48px -12px rgba(30, 26, 23, 0.12), 0 0 0 1px rgba(30, 26, 23, 0.06);
+  
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  background-color: var(--bib-bg);
+  color: var(--bib-ink);
+  line-height: 1.55;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Modern Theme Variables - Obscur (Night Reading Mode) */
+body[data-style="modern"][data-theme="dark"] {
+  --bib-bg: #13110E;
+  --bib-paper: #1B1815;
+  --bib-paper-elevated: #24201C;
+  --bib-border: #38312A;
+  --bib-border-subtle: #2C2620;
+  --bib-border-focus: #5CB080;
+  
+  --bib-ink: #ECE2D2;
+  --bib-ink-secondary: #B2A595;
+  --bib-ink-muted: #82786D;
+  
+  --bib-laurel: #5CB080;
+  --bib-laurel-bg: #143322;
+  --bib-laurel-border: #21593B;
+  
+  --bib-gold: #DFB558;
+  --bib-gold-bg: #362912;
+  --bib-gold-border: #695122;
+  
+  --bib-burgundy: #c084fc;
+  --bib-burgundy-bg: #2e1065;
+  --bib-burgundy-border: #581c87;
+  
+  --bib-indigo: #6FA4DC;
+  --bib-indigo-bg: #142840;
+  --bib-indigo-border: #234770;
+
+  --bib-shadow-card: 0 2px 6px rgba(0, 0, 0, 0.35);
+  --bib-shadow-hover: 0 8px 24px -4px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--bib-gold);
+  --bib-shadow-window: 0 20px 50px -10px rgba(0, 0, 0, 0.65), 0 0 0 1px var(--bib-border);
+}
+
+/* Scrollbar in Modern Mode */
+body[data-style="modern"] ::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+  background: transparent;
+}
+
+body[data-style="modern"] ::-webkit-scrollbar-track {
+  background: transparent;
+  background-image: none;
+}
+
+body[data-style="modern"] ::-webkit-scrollbar-thumb {
+  background-color: var(--bib-border);
+  border: 2px solid var(--bib-paper);
+  border-radius: 9999px;
+  box-shadow: none;
+}
+
+body[data-style="modern"] ::-webkit-scrollbar-thumb:hover {
+  background-color: var(--bib-ink-muted);
+}
+
+/* Base Window Structure */
+body[data-style="modern"] .win95-window {
+  background-color: var(--bib-paper);
+  border: 1px solid var(--bib-border);
+  border-radius: 12px;
+  box-shadow: var(--bib-shadow-window);
+  overflow: hidden;
+  margin-top: 8px;
+  margin-bottom: 28px;
+  transition: all 0.25s ease;
+}
+
+/* Titlebar */
+body[data-style="modern"] .win95-titlebar {
+  background: var(--bib-paper);
+  border-bottom: 1px solid var(--bib-border);
+  color: var(--bib-ink);
+  padding: 10px 18px;
+  min-height: 48px;
+  font-family: 'Cinzel', 'Lora', serif;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+body[data-style="modern"] .win95-titlebar-icon {
+  font-size: 16px;
+  filter: sepia(0.2);
+}
+
+body[data-style="modern"] .win95-titlebar-label {
+  font-size: 13px;
+  color: var(--bib-ink);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* Hide retro simulated window controls in modern mode */
+body[data-style="modern"] .win-minimize-btn,
+body[data-style="modern"] .win-maximize-btn,
+body[data-style="modern"] .win-close-title-btn {
+  display: none !important;
+}
+
+/* Modern Pill Buttons in Titlebar */
+body[data-style="modern"] .style-toggle-btn,
+body[data-style="modern"] .theme-toggle-btn {
+  background: var(--bib-paper-elevated);
+  border: 1px solid var(--bib-border);
+  color: var(--bib-ink-secondary);
+  border-radius: 20px;
+  height: 28px;
+  padding: 0 12px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 11.5px;
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+  transform: none !important;
+}
+
+body[data-style="modern"] .style-toggle-btn:hover,
+body[data-style="modern"] .theme-toggle-btn:hover {
+  background: var(--bib-gold-bg);
+  border-color: var(--bib-gold-border);
+  color: var(--bib-gold);
+}
+
+body[data-style="modern"] .style-toggle-btn:active,
+body[data-style="modern"] .theme-toggle-btn:active {
+  transform: scale(0.98) !important;
+  box-shadow: none;
+}
+
+/* Menubar */
+body[data-style="modern"] .win95-menubar {
+  background: var(--bib-paper);
+  border-bottom: 1px solid var(--bib-border-subtle);
+  padding: 4px 16px;
+  gap: 4px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+body[data-style="modern"] .win95-menu-item {
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--bib-ink-secondary);
+  transition: all 0.15s ease;
+}
+
+body[data-style="modern"] .win95-menu-item:hover,
+body[data-style="modern"] .win95-menu-item.active-menu {
+  background: var(--bib-laurel-bg);
+  color: var(--bib-laurel);
+}
+
+body[data-style="modern"] .win95-menu-dropdown {
+  background: var(--bib-paper-elevated);
+  border: 1px solid var(--bib-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+  padding: 6px;
+  min-width: 220px;
+}
+
+body[data-style="modern"] .win95-dropdown-item {
+  border-radius: 5px;
+  padding: 6px 12px;
+  font-size: 12.5px;
+  color: var(--bib-ink);
+  transition: background 0.15s;
+}
+
+body[data-style="modern"] .win95-dropdown-item:hover {
+  background: var(--bib-gold-bg);
+  color: var(--bib-gold);
+}
+
+body[data-style="modern"] .dropdown-separator {
+  background: var(--bib-border-subtle) !important;
+  margin: 4px 0 !important;
+}
+
+/* Hero Section */
+body[data-style="modern"] .header-hero {
+  padding: 28px 24px 16px;
+}
+
+body[data-style="modern"] .header-banner-panel {
+  background: transparent;
+  border: none;
+  padding: 0;
+  text-align: center;
+  max-width: 840px;
+  margin: 0 auto;
+}
+
+body[data-style="modern"] .header-badge-row {
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+body[data-style="modern"] .badge-pill {
+  background: var(--bib-gold-bg);
+  border: 1px solid var(--bib-gold-border);
+  box-shadow: none;
+  border-radius: 30px;
+  padding: 4px 14px;
+  color: var(--bib-gold);
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+body[data-style="modern"] .badge-dot {
+  color: var(--bib-laurel);
+}
+
+body[data-style="modern"] .title-gradient {
+  font-family: 'Cinzel', 'Lora', Georgia, serif;
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--bib-ink);
+  margin-bottom: 8px;
+}
+
+body[data-style="modern"] .subtitle-desc {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 14.5px;
+  font-style: italic;
+  color: var(--bib-ink-secondary);
+  line-height: 1.65;
+  margin: 0 auto;
+  max-width: 740px;
+}
+
+/* Navigation Tabs */
+body[data-style="modern"] .view-tabs {
+  background: var(--bib-paper);
+  border-bottom: 1px solid var(--bib-border);
+  padding: 14px 24px 0;
+  gap: 8px;
+}
+
+body[data-style="modern"] .view-tab-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  box-shadow: none;
+  color: var(--bib-ink-muted);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 18px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  transform: none !important;
+}
+
+body[data-style="modern"] .view-tab-btn:hover:not(.active) {
+  background: var(--bib-paper-elevated);
+  color: var(--bib-ink);
+}
+
+body[data-style="modern"] .view-tab-btn.active {
+  background: var(--bib-paper-elevated);
+  border-color: var(--bib-border) var(--bib-border) var(--bib-paper-elevated);
+  color: var(--bib-laurel);
+  font-weight: 700;
+  position: relative;
+  top: 1px;
+}
+
+body[data-style="modern"] .view-tab-btn.active::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--bib-laurel);
+  border-radius: 8px 8px 0 0;
+}
+
+/* Client Area & Group Boxes */
+body[data-style="modern"] .win95-client-area {
+  background: var(--bib-paper);
+  padding: 20px 24px 24px;
+}
+
+body[data-style="modern"] .win95-groupbox {
+  background: var(--bib-paper-elevated);
+  border: 1px solid var(--bib-border);
+  border-radius: 10px;
+  box-shadow: var(--bib-shadow-card);
+  padding: 18px 20px;
+  margin-bottom: 18px;
+}
+
+body[data-style="modern"] .groupbox-legend {
+  font-family: 'Cinzel', 'Lora', serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--bib-gold);
+  background: var(--bib-paper-elevated);
+  padding: 0 8px;
+}
+
+/* Search Bar and Inputs */
+body[data-style="modern"] .search-bar {
+  margin-bottom: 14px;
+}
+
+body[data-style="modern"] .search-icon {
+  font-size: 15px;
+  color: var(--bib-ink-muted);
+}
+
+body[data-style="modern"] .search-input {
+  background: var(--bib-paper);
+  border: 1px solid var(--bib-border);
+  border-radius: 8px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
+  font-family: 'Lora', Georgia, serif;
+  font-size: 14.5px;
+  color: var(--bib-ink);
+  padding: 10px 36px 10px 34px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+body[data-style="modern"] .search-input:focus {
+  border-color: var(--bib-laurel);
+  box-shadow: 0 0 0 3px rgba(30, 73, 51, 0.15);
+  outline: none;
+}
+
+body[data-style="modern"][data-theme="dark"] .search-input:focus {
+  box-shadow: 0 0 0 3px rgba(92, 176, 128, 0.25);
+}
+
+body[data-style="modern"] .clear-btn {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: var(--bib-ink-muted);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+}
+
+body[data-style="modern"] .clear-btn:hover {
+  background: var(--bib-border-subtle);
+  color: var(--bib-ink);
+}
+
+/* Filter Chips */
+body[data-style="modern"] .filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+body[data-style="modern"] .filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+body[data-style="modern"] .filter-label {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--bib-ink-muted);
+  margin-right: 2px;
+}
+
+body[data-style="modern"] .btn-chip {
+  background: var(--bib-paper);
+  border: 1px solid var(--bib-border);
+  box-shadow: none;
+  border-radius: 6px;
+  color: var(--bib-ink-secondary);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+  transition: all 0.15s ease;
+  transform: none !important;
+}
+
+body[data-style="modern"] .btn-chip:hover:not(.active) {
+  background: var(--bib-border-subtle);
+  color: var(--bib-ink);
+  border-color: var(--bib-border);
+}
+
+body[data-style="modern"] .btn-chip.active {
+  background: var(--bib-laurel);
+  border-color: var(--bib-laurel);
+  color: #ffffff;
+  font-weight: 600;
+  outline: none;
+  box-shadow: 0 2px 6px rgba(30, 73, 51, 0.25);
+}
+
+/* Alphabet Navigation */
+body[data-style="modern"] .alphabet-groupbox {
+  padding: 12px 16px;
+}
+
+body[data-style="modern"] .alpha-btn {
+  background: var(--bib-paper);
+  border: 1px solid var(--bib-border);
+  box-shadow: none;
+  border-radius: 5px;
+  color: var(--bib-ink-secondary);
+  font-family: 'Cinzel', serif;
+  font-size: 11.5px;
+  font-weight: 600;
+  min-width: 28px;
+  height: 28px;
+  transition: all 0.15s ease;
+  transform: none !important;
+}
+
+body[data-style="modern"] .alpha-btn:hover:not(.active) {
+  background: var(--bib-gold-bg);
+  border-color: var(--bib-gold-border);
+  color: var(--bib-gold);
+}
+
+body[data-style="modern"] .alpha-btn.active {
+  background: var(--bib-gold);
+  border-color: var(--bib-gold);
+  color: #ffffff;
+  font-weight: 700;
+  outline: none;
+  box-shadow: 0 2px 6px rgba(150, 110, 43, 0.3);
+}
+
+/* Status Bar */
+body[data-style="modern"] .win95-statusbar {
+  background: var(--bib-paper-elevated);
+  border: 1px solid var(--bib-border);
+  border-radius: 8px;
+  box-shadow: none;
+  padding: 6px 14px;
+  gap: 12px;
+}
+
+body[data-style="modern"] .status-pane {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 12px;
+  color: var(--bib-ink-secondary);
+}
+
+body[data-style="modern"] .stats-count {
+  font-weight: 600;
+  color: var(--bib-ink);
+}
+
+body[data-style="modern"] .status-ready {
+  color: var(--bib-gold);
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+body[data-style="modern"] .stress-sample-regular {
+  border-bottom-color: var(--bib-indigo) !important;
+  color: var(--bib-indigo);
+}
+
+body[data-style="modern"] .stress-sample-irregular {
+  border-bottom-color: var(--bib-gold) !important;
+  color: var(--bib-gold);
+}
+
+/* Words Grid and Cards */
+body[data-style="modern"] .words-grid {
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+body[data-style="modern"] .word-card {
+  background: var(--bib-paper-elevated);
+  border: 1px solid var(--bib-border);
+  box-shadow: var(--bib-shadow-card);
+  border-radius: 8px;
+  padding: 10px 14px;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  transform: none !important;
+}
+
+body[data-style="modern"] .word-card:hover {
+  background: var(--bib-paper-elevated);
+  border-color: var(--bib-gold);
+  box-shadow: var(--bib-shadow-hover);
+  transform: translateY(-2px) !important;
+}
+
+body[data-style="modern"] .word-card:active {
+  transform: translateY(0) !important;
+}
+
+body[data-style="modern"] .word-text {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 1.12rem;
+  font-weight: 600;
+  color: var(--bib-ink);
+  letter-spacing: -0.01em;
+}
+
+/* Stress Accent in Modern Mode */
+body[data-style="modern"] .word-text u,
+body[data-style="modern"] .modal-word-title u {
+  text-decoration: underline !important;
+  text-decoration-thickness: 2px !important;
+  text-underline-offset: 3px !important;
+  text-decoration-color: var(--bib-indigo) !important;
+  color: var(--bib-indigo) !important;
+}
+
+body[data-style="modern"] .word-text u.stress-irregular,
+body[data-style="modern"] .modal-word-title u.stress-irregular {
+  text-decoration-color: var(--bib-gold) !important;
+  color: var(--bib-gold) !important;
+}
+
+body[data-style="modern"] .word-ipa {
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--bib-laurel);
+}
+
+body[data-style="modern"] .word-extra-info {
+  font-size: 11px;
+  color: var(--bib-ink-muted);
+}
+
+/* Part of Speech Tags */
+body[data-style="modern"] .pos-tag {
+  border-radius: 4px;
+  box-shadow: none;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  padding: 2px 7px;
+  border-width: 1px;
+}
+
+body[data-style="modern"] .pos-sb {
+  background: var(--bib-indigo-bg);
+  color: var(--bib-indigo);
+  border-color: var(--bib-indigo-border);
+}
+
+body[data-style="modern"] .pos-vb {
+  background: var(--bib-laurel-bg);
+  color: var(--bib-laurel);
+  border-color: var(--bib-laurel-border);
+}
+
+body[data-style="modern"] .pos-adj {
+  background: var(--bib-gold-bg);
+  color: var(--bib-gold);
+  border-color: var(--bib-gold-border);
+}
+
+body[data-style="modern"] .pos-adv {
+  background: var(--bib-burgundy-bg);
+  color: var(--bib-burgundy);
+  border-color: var(--bib-burgundy-border);
+}
+
+body[data-style="modern"] .pos-other {
+  background: var(--bib-border-subtle);
+  color: var(--bib-ink-secondary);
+  border-color: var(--bib-border);
+}
+
+/* Pagination */
+body[data-style="modern"] .pagination {
+  gap: 6px;
+  margin-top: 14px;
+  margin-bottom: 10px;
+}
+
+body[data-style="modern"] .page-btn {
+  background: var(--bib-paper-elevated);
+  border: 1px solid var(--bib-border);
+  box-shadow: none;
+  border-radius: 6px;
+  color: var(--bib-ink-secondary);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  min-width: 32px;
+  height: 32px;
+  transition: all 0.15s ease;
+  transform: none !important;
+}
+
+body[data-style="modern"] .page-btn:hover:not(:disabled):not(.active) {
+  background: var(--bib-gold-bg);
+  border-color: var(--bib-gold-border);
+  color: var(--bib-gold);
+}
+
+body[data-style="modern"] .page-btn.active {
+  background: var(--bib-laurel);
+  border-color: var(--bib-laurel);
+  color: #ffffff;
+  font-weight: 700;
+  outline: none;
+}
+
+body[data-style="modern"] .page-btn:disabled {
+  background: transparent;
+  border-color: var(--bib-border-subtle);
+  color: var(--bib-ink-muted);
+  text-shadow: none;
+}
+
+/* Conjugation & Morphology Banner */
+body[data-style="modern"] .conjugation-banner {
+  background: var(--bib-paper-elevated);
+  border: 1px solid var(--bib-border);
+  border-radius: 10px;
+  box-shadow: var(--bib-shadow-card);
+  padding: 18px 20px;
+}
+
+body[data-style="modern"] .banner-title {
+  font-family: 'Cinzel', 'Lora', serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--bib-ink);
+}
+
+body[data-style="modern"] .banner-subtitle {
+  font-family: 'Lora', Georgia, serif;
+  font-style: italic;
+  color: var(--bib-ink-secondary);
+}
+
+body[data-style="modern"] .banner-badge {
+  background: var(--bib-laurel);
+  border: none;
+  border-radius: 4px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  letter-spacing: 0.05em;
+  padding: 3px 8px;
+}
+
+body[data-style="modern"] .insight-card {
+  background: var(--bib-paper);
+  border: 1px solid var(--bib-border);
+  border-radius: 6px;
+  box-shadow: none;
+}
+
+body[data-style="modern"] .insight-card-label {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--bib-gold);
+}
+
+body[data-style="modern"] .insight-card-val {
+  font-family: 'Lora', Georgia, serif;
+  color: var(--bib-ink);
+  font-weight: 600;
+}
+
+body[data-style="modern"] .table-wrap {
+  border: 1px solid var(--bib-border);
+  border-radius: 6px;
+  box-shadow: none;
+}
+
+body[data-style="modern"] .conj-table {
+  font-family: 'Lora', Georgia, serif;
+}
+
+body[data-style="modern"] .conj-table th {
+  background: var(--bib-paper);
+  border-color: var(--bib-border);
+  color: var(--bib-ink-secondary);
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+body[data-style="modern"] .conj-table td {
+  border-color: var(--bib-border-subtle);
+  color: var(--bib-ink);
+}
+
+body[data-style="modern"] .conj-table tr:nth-child(even) {
+  background: var(--bib-paper);
+}
+
+body[data-style="modern"] .conj-form {
+  font-weight: 600;
+  color: var(--bib-laurel);
+}
+
+/* Text Analyzer View */
+body[data-style="modern"] .analyzer-label {
+  font-family: 'Cinzel', 'Lora', serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--bib-gold);
+}
+
+body[data-style="modern"] .analyzer-textarea {
+  background: var(--bib-paper);
+  border: 1px solid var(--bib-border);
+  border-radius: 8px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
+  font-family: 'Lora', Georgia, serif;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--bib-ink);
+  padding: 14px 16px;
+}
+
+body[data-style="modern"] .analyzer-textarea:focus {
+  border-color: var(--bib-laurel);
+  box-shadow: 0 0 0 3px rgba(30, 73, 51, 0.15);
+  outline: none;
+}
+
+body[data-style="modern"] .btn-primary-action {
+  background: var(--bib-laurel) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--bib-laurel) !important;
+  box-shadow: 0 2px 8px rgba(30, 73, 51, 0.25) !important;
+  border-radius: 6px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600;
+  padding: 8px 18px;
+  transform: none !important;
+}
+
+body[data-style="modern"] .btn-primary-action:hover {
+  filter: brightness(1.08);
+}
+
+body[data-style="modern"] .btn-secondary-action {
+  background: var(--bib-paper) !important;
+  color: var(--bib-ink-secondary) !important;
+  border: 1px solid var(--bib-border) !important;
+  box-shadow: none !important;
+  border-radius: 6px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600;
+  padding: 8px 14px;
+  transform: none !important;
+}
+
+body[data-style="modern"] .btn-secondary-action:hover {
+  background: var(--bib-gold-bg) !important;
+  color: var(--bib-gold) !important;
+  border-color: var(--bib-gold-border) !important;
+}
+
+body[data-style="modern"] .interactive-reader-content {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 16px;
+  line-height: 2;
+  color: var(--bib-ink);
+}
+
+body[data-style="modern"] .reader-hint-text {
+  font-family: 'Lora', Georgia, serif;
+  font-style: italic;
+  color: var(--bib-ink-muted);
+}
+
+body[data-style="modern"] .legend-chip {
+  background: var(--bib-paper);
+  border: 1px solid var(--bib-border);
+  box-shadow: none;
+  border-radius: 4px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 11px;
+}
+
+body[data-style="modern"] .legend-adv {
+  color: var(--bib-burgundy);
+  background: var(--bib-burgundy-bg);
+  border-bottom: 2px solid var(--bib-burgundy);
+}
+body[data-style="modern"] .legend-adv .legend-dot {
+  background: var(--bib-burgundy);
+}
+
+body[data-style="modern"] .stat-badge {
+  background: var(--bib-paper-elevated);
+  border: 1px solid var(--bib-border);
+  box-shadow: none;
+  border-radius: 6px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: var(--bib-ink-secondary);
+}
+
+/* Interactive Reader Highlight Tokens */
+body[data-style="modern"] .txt-token {
+  border-radius: 3px;
+  padding: 1px 3px;
+  margin: 0 1px;
+  transition: all 0.15s ease;
+}
+
+body[data-style="modern"] .txt-token.token-vb {
+  background: var(--bib-laurel-bg);
+  border-bottom: 2px solid var(--bib-laurel);
+  color: var(--bib-laurel);
+}
+
+body[data-style="modern"] .txt-token.token-sb {
+  background: var(--bib-indigo-bg);
+  border-bottom: 2px solid var(--bib-indigo);
+  color: var(--bib-indigo);
+}
+
+body[data-style="modern"] .txt-token.token-adj {
+  background: var(--bib-gold-bg);
+  border-bottom: 2px solid var(--bib-gold);
+  color: var(--bib-gold);
+}
+
+body[data-style="modern"] .txt-token.token-adv {
+  background: var(--bib-burgundy-bg);
+  border-bottom: 2px solid var(--bib-burgundy);
+  color: var(--bib-burgundy);
+}
+
+body[data-style="modern"] .txt-token.token-num {
+  background: var(--bib-border-subtle);
+  border-bottom: 2px solid var(--bib-gold);
+  color: var(--bib-ink);
+}
+
+body[data-style="modern"] .txt-token.token-other {
+  border-bottom: 1.5px dotted var(--bib-ink-muted);
+  color: var(--bib-ink-secondary);
+}
+
+body[data-style="modern"] .txt-token.token-unknown {
+  border-bottom: 1.5px dashed #dc2626;
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.08);
+}
+
+body[data-style="modern"] .txt-token:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  transform: translateY(-1px);
+}
+
+body[data-style="modern"] .txt-token.active-token {
+  outline: 2px solid var(--bib-gold);
+  outline-offset: 2px;
+  box-shadow: 0 0 12px rgba(150, 110, 43, 0.4) !important;
+}
+
+/* Footer & Statusbar Bottom */
+body[data-style="modern"] .win95-statusbar-bottom {
+  background: var(--bib-paper);
+  border-top: 1px solid var(--bib-border);
+  box-shadow: none;
+  color: var(--bib-ink-muted);
+  font-family: 'Lora', Georgia, serif;
+  font-size: 12.5px;
+  line-height: 1.6;
+  padding: 16px 20px;
+}
+
+body[data-style="modern"] .win95-statusbar-bottom a {
+  color: var(--bib-laurel);
+  text-decoration: underline;
+}
+
+/* Modals in Modern Mode (Archival Exlibris & Folio Sheet) */
+body[data-style="modern"] .modal-backdrop {
+  background: rgba(19, 17, 14, 0.65);
+  backdrop-filter: blur(4px);
+}
+
+body[data-style="modern"] .win95-dialog {
+  background: var(--bib-paper-elevated);
+  border: 1px solid var(--bib-border);
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.28);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+body[data-style="modern"] .modal-titlebar {
+  background: var(--bib-paper);
+  border-bottom: 1px solid var(--bib-border);
+  padding: 12px 18px;
+}
+
+body[data-style="modern"] .win95-dialog-title {
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--bib-gold);
+}
+
+body[data-style="modern"] .win-close-btn {
+  background: transparent;
+  border: 1px solid var(--bib-border);
+  border-radius: 50%;
+  color: var(--bib-ink-muted);
+  width: 26px;
+  height: 26px;
+  font-size: 12px;
+  box-shadow: none;
+  transform: none !important;
+}
+
+body[data-style="modern"] .win-close-btn:hover {
+  background: var(--bib-gold-bg);
+  border-color: var(--bib-gold-border);
+  color: var(--bib-gold);
+}
+
+body[data-style="modern"] .modal-word-title {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: var(--bib-ink);
+}
+
+body[data-style="modern"] .modal-actions .btn-action {
+  background: var(--bib-paper);
+  border: 1px solid var(--bib-border);
+  box-shadow: none;
+  border-radius: 6px;
+  color: var(--bib-ink-secondary);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 6px 14px;
+  transition: all 0.15s ease;
+  transform: none !important;
+}
+
+body[data-style="modern"] .modal-actions .btn-action:hover {
+  background: var(--bib-gold-bg);
+  border-color: var(--bib-gold-border);
+  color: var(--bib-gold);
+}
+
+body[data-style="modern"] .win95-inset-box {
+  background: var(--bib-paper);
+  border: 1px solid var(--bib-border);
+  box-shadow: none;
+  border-radius: 8px;
+}
+
+body[data-style="modern"] .modal-section-title {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--bib-gold);
+}
+
+body[data-style="modern"] .definition-box {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--bib-ink);
+}
+
+body[data-style="modern"] .modal-ok-btn {
+  background: var(--bib-laurel) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--bib-laurel) !important;
+  box-shadow: 0 2px 8px rgba(30, 73, 51, 0.25) !important;
+  border-radius: 6px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600;
+  padding: 8px 20px;
+  transform: none !important;
+}
+
+body[data-style="modern"] .modal-ok-btn:hover {
+  filter: brightness(1.08);
+}
+

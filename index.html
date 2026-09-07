@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ia">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dictionario de Interlingua (IALA)</title>
+  <meta name="description" content="Dictionario electronic e motor morphologic de 51.500 parolas de Interlingua con stilo retro Windows 95 e alternation de themas claro e obscur.">
+  <meta property="og:title" content="Dictionario de Interlingua (IALA)">
+  <meta property="og:description" content="Dictionario electronic e motor morphologic de 51.500 parolas de Interlingua con stilo retro Windows 95 e alternation de themas claro e obscur.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-style="modern">
+  <div class="app-layout">
+    
+    <!-- Windows 95 Main Application Window -->
+    <div class="win95-window" id="main-application-window">
+      
+      <!-- Window Title Bar -->
+      <div class="win95-titlebar" id="app-titlebar">
+        <div class="win95-titlebar-text">
+          <span class="win95-titlebar-icon">🗂️</span>
+          <span class="win95-titlebar-label">Dictionario &amp; Motor Morphologic de Interlingua (IALA 51.500) [v1.0]</span>
+        </div>
+        <div class="win95-titlebar-controls">
+          <button id="style-toggle" class="win95-btn win95-title-btn style-toggle-btn" title="Alternar Stilo: Moderno (Biblioteca &amp; Archivo) / Windows 95 (Retro)">
+            <span class="style-icon">🏛️</span>
+            <span class="style-label">Stilo: Moderno</span>
+          </button>
+          <button id="theme-toggle" class="win95-btn win95-title-btn theme-toggle-btn" title="Alternar Modo: Clare / Obscur">
+            <span class="theme-icon">☀</span>
+            <span class="theme-label">Modo: Clare</span>
+          </button>
+          <button class="win95-btn win95-title-btn win-minimize-btn" title="Minimisar" aria-label="Minimisar">_</button>
+          <button class="win95-btn win95-title-btn win-maximize-btn" title="Maximisar" aria-label="Maximisar">□</button>
+          <button class="win95-btn win95-title-btn win95-close-btn win-close-title-btn" title="Clauder" aria-label="Clauder">✕</button>
+        </div>
+      </div>
+
+      <!-- Window Menu Bar -->
+      <div class="win95-menubar" role="menubar">
+        <div class="win95-menu-container">
+          <div class="win95-menu-item" id="menu-file" tabindex="0"><u>F</u>ile</div>
+          <div class="win95-menu-dropdown" id="dropdown-file">
+            <div class="win95-dropdown-item" id="menu-file-audio">
+              <span>🔊</span> <u>V</u>oce &amp; Audio (TTS)...
+            </div>
+            <div class="dropdown-separator" style="height: 1px; background: var(--win-shadow, #808080); margin: 3px 0;"></div>
+            <div class="win95-dropdown-item" id="menu-file-about">
+              <span>ℹ️</span> <u>A</u> proposito de Dictionario...
+            </div>
+          </div>
+        </div>
+        <div class="win95-menu-container">
+          <div class="win95-menu-item" id="menu-stilo" tabindex="0"><u>S</u>tilo</div>
+          <div class="win95-menu-dropdown" id="dropdown-stilo">
+            <div class="win95-dropdown-item" id="menu-stilo-w95">
+              <span>💻</span> Windows 95 (Retro)
+            </div>
+            <div class="win95-dropdown-item" id="menu-stilo-modern">
+              <span>🏛️</span> Moderno (Biblioteca &amp; Archivo)
+            </div>
+            <div class="dropdown-separator" style="height: 1px; background: var(--win-shadow, #808080); margin: 3px 0;"></div>
+            <div class="win95-dropdown-item" id="menu-theme-light">
+              <span>☀</span> Modo Clare
+            </div>
+            <div class="win95-dropdown-item" id="menu-theme-dark">
+              <span>🌙</span> Modo Obscur
+            </div>
+          </div>
+        </div>
+        <div class="win95-menu-item" id="menu-cerca" tabindex="0"><u>C</u>erca</div>
+        <div class="win95-menu-item" id="menu-analysator" tabindex="0"><u>A</u>nalysator</div>
+        <div class="win95-menu-item" id="menu-grammatica" tabindex="0"><u>G</u>rammatica</div>
+      </div>
+
+      <!-- App Software Banner -->
+      <header class="header-hero">
+        <div class="header-banner-panel">
+          <div class="header-badge-row">
+            <span class="badge-pill">
+              <span class="badge-dot">●</span> 51.511 Entratas Lexicographic + Analysator Textual (IALA 1951)
+            </span>
+          </div>
+          <h1 class="title-gradient">Dictionario &amp; Motor Morphologic</h1>
+          <p class="subtitle-desc">
+            Cerca lexicographic de 51.500 parolas, deconstruction de formas conjugate o <strong>analyse textual complete de parragrafos</strong> con detection de radices e categorias grammatical.
+          </p>
+        </div>
+      </header>
+
+      <!-- Navigation Tabs: Dictionary Search vs Text Analyzer (Win95 Property Sheet) -->
+      <nav class="view-tabs" aria-label="Modo de application">
+        <button id="tab-btn-search" class="view-tab-btn active">
+          <span class="win95-tab-icon">🔍</span>
+          Cerca Lexicographic
+        </button>
+        <button id="tab-btn-analyzer" class="view-tab-btn">
+          <span class="win95-tab-icon">📄</span>
+          Analyse Textual de Parragrafos
+        </button>
+      </nav>
+
+      <!-- Tab Content Area / Window Client Area -->
+      <div class="win95-client-area">
+
+        <!-- VIEW 1: Dictionary & Single Word Morphology -->
+        <section id="view-dictionary" class="view-section">
+          <!-- Search Controls & Filters GroupBox -->
+          <div class="search-container win95-groupbox">
+            <div class="groupbox-legend">Parametros de Cerca</div>
+            <div class="search-bar">
+              <span class="search-icon">🔍</span>
+              <input 
+                type="text" 
+                id="search-input" 
+                class="search-input" 
+                placeholder="Cerca parolas, formas conjugate, superlativos o plurales (ex: amava, clarissime, uxores)..." 
+                autocomplete="off" 
+                spellcheck="false" 
+                autofocus
+              >
+              <button id="clear-btn" class="clear-btn win95-btn" title="Rader recerca">✕</button>
+            </div>
+
+            <div class="filter-row">
+              <div class="filter-group">
+                <span class="filter-label">Typo:</span>
+                <button class="btn-chip filter-chip-pos active" data-pos="ALL">Tote</button>
+                <button class="btn-chip filter-chip-pos" data-pos="sb">Substantivos (sb)</button>
+                <button class="btn-chip filter-chip-pos" data-pos="vb">Verbos (vb)</button>
+                <button class="btn-chip filter-chip-pos" data-pos="adj">Adjectivos (adj)</button>
+                <button class="btn-chip filter-chip-pos" data-pos="adv">Adverbios (adv)</button>
+              </div>
+
+              <div class="filter-group">
+                <span class="filter-label">Modo:</span>
+                <button class="btn-chip filter-chip-mode active" data-mode="prefix">Initio</button>
+                <button class="btn-chip filter-chip-mode" data-mode="contains">Contine</button>
+                <button class="btn-chip filter-chip-mode" data-mode="exact">Exacte</button>
+              </div>
+
+              <div class="filter-group">
+                <span class="filter-label">Accento:</span>
+                <button class="btn-chip filter-chip-stress active" data-stress="ALL">Tote</button>
+                <button class="btn-chip filter-chip-stress" data-stress="stressed">Sublineate (Irregular)</button>
+                <button class="btn-chip filter-chip-stress" data-stress="regular">Regular</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dynamic Morphologic Banner (Single Search) -->
+          <div id="morphology-banner" class="conjugation-banner" style="display: none;"></div>
+
+          <!-- Alphabet Bar -->
+          <div class="win95-groupbox alphabet-groupbox">
+            <div class="groupbox-legend">Indice Alphabetic</div>
+            <nav class="alphabet-nav" id="alphabet-nav" aria-label="Navigator alphabetic"></nav>
+          </div>
+
+          <!-- Results Status Bar -->
+          <div class="stats-bar win95-statusbar">
+            <div id="search-stats" class="status-pane stats-count">Cargante dictionario...</div>
+            <div class="status-pane status-legend">
+              <span>Accento Regular (IALA §10): <u class="stress-sample-regular">vocal</u></span>
+              <span>Irregular / Proparoxytono: <u class="stress-sample-irregular">vocal</u></span>
+            </div>
+            <div class="status-pane status-ready">PRONTO [IALA 1951]</div>
+          </div>
+
+          <!-- Cards Grid -->
+          <main class="words-grid" id="words-grid"></main>
+
+          <!-- Pagination -->
+          <footer class="pagination" id="pagination"></footer>
+        </section>
+
+        <!-- VIEW 2: Text Analyzer Section -->
+        <section id="view-analyzer" class="view-section text-analyzer-section" style="display: none;">
+          <div class="analyzer-input-card win95-groupbox">
+            <div class="groupbox-legend">Editor de Analyse de Parragrafos</div>
+            <label for="analyzer-input-text" class="analyzer-label">
+              Colla o scribe hic un parragrafo in Interlingua:
+            </label>
+            <textarea 
+              id="analyzer-input-text" 
+              class="analyzer-textarea" 
+              placeholder="Exemplo: Interlingua es un lingua auxiliar international basate sur le vocabulos commun del principal linguas occidental. Le parolas de interlingua es facilemente comprehensibile pro centenas de milliones de personas sin studio previe..."
+            ></textarea>
+            
+            <div class="analyzer-actions">
+              <div class="analyzer-actions-left">
+                <button id="btn-analyze-run" class="btn-primary-action win95-btn">
+                  ▶ Analyse Textual Instantanee
+                </button>
+                <button id="btn-analyze-sample" class="btn-secondary-action win95-btn">
+                  Cargar Texto Exemplar
+                </button>
+              </div>
+              <button id="btn-analyze-clear" class="btn-secondary-action win95-btn">
+                Vacuar
+              </button>
+            </div>
+          </div>
+
+          <!-- Output Analysis Grid -->
+          <div id="analyzer-output-area" style="display: none;">
+            <!-- Badges summary -->
+            <div class="analysis-stats-badges" id="analyzer-stats-badges"></div>
+
+            <div class="analyzer-output-container">
+              <!-- Interactive Reader -->
+              <div class="interactive-reader-card win95-groupbox">
+                <div class="groupbox-legend">Texto Interactivamente Analysate</div>
+                <div class="reader-hint-text">
+                  Pulsa qualcunque parola pro examinar su morphologia, radice e categoria:
+                </div>
+                <div class="reader-color-legend">
+                  <span class="legend-chip legend-vb"><span class="legend-dot"></span>Verbos</span>
+                  <span class="legend-chip legend-sb"><span class="legend-dot"></span>Substantivos</span>
+                  <span class="legend-chip legend-adj"><span class="legend-dot"></span>Adjectivos</span>
+                  <span class="legend-chip legend-adv"><span class="legend-dot"></span>Adverbios</span>
+                  <span class="legend-chip legend-num"><span class="legend-dot"></span>Numerales</span>
+                  <span class="legend-chip legend-other"><span class="legend-dot"></span>Grammatical</span>
+                  <span class="legend-chip legend-unknown"><span class="legend-dot"></span>Incognite / Altere</span>
+                </div>
+                <div id="interactive-reader-body" class="interactive-reader-content"></div>
+              </div>
+
+              <!-- Inspector side panel -->
+              <aside class="word-inspector-card win95-groupbox" id="word-inspector-card">
+                <div class="groupbox-legend">Inspector Morphologic</div>
+                <div id="inspector-content">
+                  <div class="inspector-placeholder">
+                    <div class="inspector-icon">🔍</div>
+                    <p>Pulsa qualcunque parola in le texto pro vider su radice, function grammatical, flexiones e definition.</p>
+                  </div>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </section>
+
+      </div><!-- /.win95-client-area -->
+
+      <!-- Info Footer (Inside Window Bottom) -->
+      <footer class="footer-info win95-statusbar-bottom">
+        <p>
+          <strong>Dictionario e Motor Morphologic Universal de Interlingua</strong> — 
+          Motor de derivation, deconstruction e analyse morphologic disveloppate per <a href="https://github.com/Walter-Synapse" target="_blank">Walter García</a>, basate super le <em>Grammatica de Interlingua</em> de IALA (Alexander Gode &amp; Hugh E. Blair).
+          Vocabulario extraite del <em>Dictionario interlingua-nederlandese</em> de Piet Cleij (1927–2015), redigite per Thomas Breinstrup.
+        </p>
+      <p style="margin-top: 6px;">
+        Ligamines utile: 
+        <a href="https://github.com/Walter-Synapse/DictionarioIALA" target="_blank" rel="noopener">📦 Repositorio GitHub (Codice Fonte)</a> • 
+        <a href="Grammatica_de_Interlingua.md" download>Grammatica Complete (Markdown)</a> • 
+        <a href="https://www.interlingua.com" target="_blank" rel="noopener">Union Mundial pro Interlingua (UMI)</a>
+      </p>
+      </footer>
+
+    </div><!-- /.win95-window -->
+
+  </div><!-- /.app-layout -->
+
+  <!-- Detail Modal Dialog -->
+  <div class="modal-backdrop" id="modal-backdrop">
+    <div class="modal-card win95-dialog">
+      <div class="win95-titlebar modal-titlebar">
+        <div class="win95-titlebar-text">
+          <span class="win95-titlebar-icon">📖</span>
+          <span class="win95-dialog-title">Ficha Lexicographic — Interlingua IALA</span>
+        </div>
+        <div class="win95-titlebar-controls">
+          <button class="win95-btn win95-title-btn win-close-btn modal-close" id="modal-close" aria-label="Clauder">✕</button>
+        </div>
+      </div>
+
+      <div class="modal-body-wrapper">
+        <div class="modal-word-header">
+          <div class="modal-word-title-row">
+            <h2 class="modal-word-title" id="modal-word-title">—</h2>
+            <span id="modal-pos-tag" class="pos-tag pos-sb">SB</span>
+          </div>
+          <p id="modal-pronunciation" class="modal-pronunciation-text"></p>
+        </div>
+
+        <div class="modal-actions">
+          <button id="modal-speak-btn" class="btn-action win95-btn">
+            🔊 Pronunciar
+          </button>
+          <button id="modal-copy-btn" class="btn-action win95-btn">
+            📋 Copiar
+          </button>
+          <a id="modal-ied-link" href="#" target="_blank" class="btn-action win95-btn">
+            🌐 Cercar in IED Online
+          </a>
+        </div>
+
+        <!-- Dynamic Morphological Section inside Modal -->
+        <div id="modal-morphology-section" class="modal-section win95-inset-box" style="display: none;"></div>
+
+        <div class="modal-section win95-inset-box">
+          <div class="modal-section-title">Definition e Contexto (Wiktionary Live)</div>
+          <div id="modal-definitions" class="definition-box">
+            Cargante...
+          </div>
+        </div>
+
+        <div class="modal-footer-btns">
+          <button class="win95-btn modal-ok-btn" onclick="document.getElementById('modal-close').click()">De accordo / Clauder</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- About Modal Dialog (File -> About) -->
+  <div class="modal-backdrop" id="about-modal-backdrop">
+    <div class="modal-card win95-dialog" style="max-width: 530px;">
+      <div class="win95-titlebar modal-titlebar">
+        <div class="win95-titlebar-text">
+          <span class="win95-titlebar-icon">🗂️</span>
+          <span class="win95-dialog-title">A proposito de Dictionario e Motor de Interlingua</span>
+        </div>
+        <div class="win95-titlebar-controls">
+          <button class="win95-btn win95-title-btn win-close-btn" id="about-modal-close" aria-label="Clauder">✕</button>
+        </div>
+      </div>
+
+      <div class="modal-body-wrapper">
+        <div style="display: flex; gap: 14px; align-items: center; margin-bottom: 12px;">
+          <div style="font-size: 2.8rem; line-height: 1;">💻</div>
+          <div>
+            <h2 style="font-size: 1.15rem; font-weight: bold; margin: 0 0 3px; color: var(--win-text);">
+              Dictionario &amp; Motor Morphologic de Interlingua
+            </h2>
+            <div style="font-size: 11px; color: var(--win-text-muted);">
+              Version 1.0 (2026) — Edition Windows 95 Retro
+            </div>
+          </div>
+        </div>
+
+        <div class="win95-inset-box" style="padding: 10px 12px; font-size: 12px; line-height: 1.55; margin-bottom: 14px;">
+          <p style="margin: 0 0 8px;">
+            <strong>Disveloppator del Motor:</strong> Walter García<br>
+            <strong>Pais:</strong> Nicaragua 🇳🇮<br>
+            <strong>Profilo GitHub:</strong> 
+            <a href="https://github.com/Walter-Synapse" target="_blank" rel="noopener" style="color: var(--win-accent-blue); text-decoration: underline;">
+              https://github.com/Walter-Synapse
+            </a><br>
+            <strong>Repositorio Official (Codice Fonte Aperte):</strong>
+            <a href="https://github.com/Walter-Synapse/DictionarioIALA" target="_blank" rel="noopener" style="color: var(--win-accent-blue); text-decoration: underline;">
+              https://github.com/Walter-Synapse/DictionarioIALA
+            </a>
+          </p>
+          <hr style="border: 0; border-top: 1px solid var(--win-shadow); border-bottom: 1px solid var(--win-light); margin: 8px 0;">
+          <p style="margin: 0 0 8px;">
+            Iste application es un instrumento universal pro le studio, cerca lexicographic e analyse morphologic del lingua auxiliar international <strong>Interlingua</strong> (IALA).
+          </p>
+          <p style="margin: 0 0 8px;">
+            Le motor de derivation, deconstruction de flexiones verbal, derivationes, superlativos e analyse textual parragrafic esseva disveloppate per <strong>Walter García</strong> in <strong>Nicaragua</strong>, basate super le principios structural del <em>Grammatica de Interlingua</em> de Alexander Gode &amp; Hugh E. Blair.
+          </p>
+          <p style="margin: 0;">
+            Le thesauro lexicographic de <strong>51.511 entratas</strong> es extraite del <em>Dictionario interlingua-nederlandese</em> de Piet Cleij (1927–2015), redigite per Thomas Breinstrup.
+          </p>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 8px;">
+          <a href="https://github.com/Walter-Synapse/DictionarioIALA" target="_blank" rel="noopener" class="win95-btn" style="text-decoration: none; padding: 4px 12px; font-size: 12px; color: inherit; display: inline-flex; align-items: center; gap: 4px;">
+            <span>📦</span> Repositorio GitHub
+          </a>
+          <button class="win95-btn modal-ok-btn" id="about-modal-ok-btn" style="min-width: 80px;">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load Embedded Lexicon Data -->
+  <script src="data.js?v=20260907-4"></script>
+  <!-- Load Morphology & Conjugation Engine -->
+  <script src="conjugator.js?v=20260907-4"></script>
+  <!-- Load Interlingua Phonetic Transcriber -->
+  <script src="transcriber.js?v=20260907-4"></script>
+  <!-- Load Environment Credentials (Ignorate per Git) -->
+  <script src="env.js?v=20260907-7"></script>
+  <!-- Load Google Cloud TTS Engine -->
+  <script src="tts.js?v=20260907-6"></script>
+  <!-- Load Audio Configuration Modal Component -->
+  <script src="audioConfigModal.js?v=20260907-6"></script>
+  <!-- Load App Controller -->
+  <script src="app.js?v=20260907-5"></script>
+</body>
+</html>

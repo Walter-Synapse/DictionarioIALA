@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "interlingua-iala"
+  },
+  "targets": {
+    "interlingua-iala": {
+      "hosting": {
+        "dictionario": [
+          "interlingua-iala"
+        ]
+      }
+    }
+  }
+}

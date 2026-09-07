@@ -1,0 +1,23 @@
+# Environment Variables (Secrets & Tokens)
+.env
+.env*
+*.env
+env.js
+build.sh
+dist/
+
+# OS and Editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.bak
+*~
+
+# Logs
+*.log
+.firebase/
+DOC.md
+
+
+# node_modules
+node_modules/*
