@@ -268,6 +268,102 @@ import type { IALAConjugatorAPI, AdjParadigm, NounParadigm, AnalysisResult, Coll
     { p: 'co', desc: 'simul, union' }
   ];
 
+  /// Suffixos productivos de derivation regulari in Interlingua (IALA §§136-154)
+  /// Cata suffixo possede restrictiones morphosyntactic stricte super le categoria del radice
+  interface ProductiveSuffixRule {
+    suffix: string;
+    resultingPos: string;
+    allowedBasePos: ('sb' | 'adj' | 'vb')[];
+    ruleRef: string;
+    desc: string;
+    generateCandidates: (stemWithoutSuffix: string) => string[];
+  }
+
+  const PRODUCTIVE_SUFFIXES: ProductiveSuffixRule[] = [
+    // 1. -ista: uno qui practica o adhere a (ab substantivos e adjectivos) [IALA §§138, 141]
+    {
+      suffix: 'ista',
+      resultingPos: 'sb/adj',
+      allowedBasePos: ['sb', 'adj'],
+      ruleRef: '§§138, 141',
+      desc: 'persona professante, practicante o adherente de',
+      generateCandidates: (stem: string) => {
+        const cands = [stem];
+        if (!stem.endsWith('e')) cands.push(stem + 'e');
+        if (!stem.endsWith('a')) cands.push(stem + 'a');
+        if (!stem.endsWith('o')) cands.push(stem + 'o');
+        if (stem.endsWith('ic')) cands.push(stem.slice(0, -2) + 'ica');
+        return cands;
+      }
+    },
+    // 2. -ismo: practica, theoria o doctrina de (ab substantivos e adjectivos) [IALA §§138, 141]
+    {
+      suffix: 'ismo',
+      resultingPos: 'sb',
+      allowedBasePos: ['sb', 'adj'],
+      ruleRef: '§§138, 141',
+      desc: 'doctrina, systema, practica o stato de',
+      generateCandidates: (stem: string) => {
+        const cands = [stem];
+        if (!stem.endsWith('e')) cands.push(stem + 'e');
+        if (!stem.endsWith('a')) cands.push(stem + 'a');
+        if (!stem.endsWith('o')) cands.push(stem + 'o');
+        return cands;
+      }
+    },
+    // 3. -itate: qualitate o stato de (strictemente ab adjectivos) [IALA §141]
+    {
+      suffix: 'itate',
+      resultingPos: 'sb',
+      allowedBasePos: ['adj'],
+      ruleRef: '§141',
+      desc: 'qualitate, stato o condition de esser',
+      generateCandidates: (stem: string) => {
+        const cands = [stem];
+        if (!stem.endsWith('e')) cands.push(stem + 'e');
+        if (!stem.endsWith('o')) cands.push(stem + 'o');
+        if (stem.endsWith('ic')) cands.push(stem);
+        return cands;
+      }
+    },
+    // 4. -mento: action o resultato de (strictemente ab themas verbal) [IALA §§146, 152]
+    {
+      suffix: 'mento',
+      resultingPos: 'sb',
+      allowedBasePos: ['vb'],
+      ruleRef: '§§146, 152',
+      desc: 'action o resultato del acto de',
+      generateCandidates: (stem: string) => {
+        // e.g. reprocessamento -> stem reprocessa -> reprocessar
+        const cands: string[] = [];
+        if (stem.endsWith('a')) {
+          cands.push(stem + 'r'); // -ar
+        } else if (stem.endsWith('i')) {
+          cands.push(stem.slice(0, -1) + 'er'); // -er
+          cands.push(stem + 'r'); // -ir
+        } else {
+          cands.push(stem + 'ar', stem + 'er', stem + 'ir');
+        }
+        return cands;
+      }
+    },
+    // 5. -al: pertinente o relative a (ab substantivos) [IALA §139]
+    {
+      suffix: 'al',
+      resultingPos: 'adj',
+      allowedBasePos: ['sb'],
+      ruleRef: '§139',
+      desc: 'pertinente, relationate o relative a',
+      generateCandidates: (stem: string) => {
+        const cands = [stem];
+        if (!stem.endsWith('o')) cands.push(stem + 'o');
+        if (!stem.endsWith('e')) cands.push(stem + 'e');
+        if (!stem.endsWith('a')) cands.push(stem + 'a');
+        return cands;
+      }
+    }
+  ];
+
   /**
    * Genera el paradigma completo de conjugacion de un verbo en Interlingua (§§94-115)
    */
@@ -367,7 +463,8 @@ import type { IALAConjugatorAPI, AdjParadigm, NounParadigm, AnalysisResult, Coll
     let absSup = "";
     if (a.endsWith('c')) {
       absSup = a + 'hissime';
-    } else if (a.endsWith('e')) {
+    } else if (a.endsWith('e') || a.endsWith('a') || a.endsWith('o')) {
+      // Elision del vocal thematic ante le suffixo vocalic -issime (IALA §§36, 136)
       absSup = a.slice(0, -1) + 'issime';
     } else {
       absSup = a + 'issime';
@@ -376,7 +473,8 @@ import type { IALAConjugatorAPI, AdjParadigm, NounParadigm, AnalysisResult, Coll
     let adv = "";
     if (a.endsWith('c')) {
       adv = a + 'amente';
-    } else if (a.endsWith('e')) {
+    } else if (a.endsWith('e') || a.endsWith('a') || a.endsWith('o')) {
+      // Adverbio con desinentia -mente super thema vocalic (IALA §45)
       adv = a + 'mente';
     } else {
       adv = a + 'mente';
@@ -386,10 +484,10 @@ import type { IALAConjugatorAPI, AdjParadigm, NounParadigm, AnalysisResult, Coll
     // §41: Adjectivos que NON pote assumer -o/-a e remane inalterate:
     // (a) in -ce, -u
     // (b) in -ese/-ense, -il/-ile, -ior, -nte
-    // (c) in suffixos -al, -ar, -bile, -oide, -plice
+    // (c) in suffixos -al, -ar, -bile, -oide, -plice, -ista
     // (d) celibe, grande, verde, forte, triste, breve, etc.
     const isInvariant = 
-      a.endsWith('al') || a.endsWith('ar') || a.endsWith('bile') || a.endsWith('oide') || a.endsWith('plice') ||
+      a.endsWith('ista') || a.endsWith('al') || a.endsWith('ar') || a.endsWith('bile') || a.endsWith('oide') || a.endsWith('plice') ||
       a.endsWith('ce') || a.endsWith('u') || a.endsWith('ese') || a.endsWith('ense') || a.endsWith('il') ||
       a.endsWith('ile') || a.endsWith('ior') || a.endsWith('nte') ||
       ['grande', 'verde', 'forte', 'triste', 'breve', 'grave', 'leve', 'suave', 'cruel', 'fidel', 'qual', 'tal', 'celibe', 'folle', 'molle', 'juvene', 'omne'].includes(a);
@@ -401,11 +499,20 @@ import type { IALAConjugatorAPI, AdjParadigm, NounParadigm, AnalysisResult, Coll
     if (isInvariant) {
       masc = a;
       fem = a;
-      substantivationNote = `Invariabile in -o/-a (IALA §41c: suffixos -al, -ar, -bile, etc.): "le ${a}" (masc/fem/abstracto)`;
+      const refSuffix = a.endsWith('ista') ? 'suffixos in -ista (§142)' : 'suffixos -al, -ar, -bile, etc. (§41)';
+      substantivationNote = `Invariabile in -o/-a (IALA ${refSuffix}): "le ${a}" (masc/fem/abstracto)`;
     } else if (a.endsWith('e')) {
       masc = a.slice(0, -1) + 'o';
       fem = a.slice(0, -1) + 'a';
       substantivationNote = `Regular con desinentias -o / -a (IALA §40)`;
+    } else if (a.endsWith('o')) {
+      masc = a;
+      fem = a.slice(0, -1) + 'a';
+      substantivationNote = `Regular con alternantia -o / -a (IALA §40)`;
+    } else if (a.endsWith('a')) {
+      masc = a;
+      fem = a;
+      substantivationNote = `Invariabile in desinentia vocalic -a (IALA §40): "le ${a}" (masc/fem)`;
     } else {
       masc = a + 'o';
       fem = a + 'a';
@@ -1192,6 +1299,37 @@ import type { IALAConjugatorAPI, AdjParadigm, NounParadigm, AnalysisResult, Coll
       }
     }
 
+    // 7. Derivation con suffixos productivos (IALA §§136-154) - e.g. nutritionista -> nutrition + -ista
+    for (const sfx of PRODUCTIVE_SUFFIXES) {
+      if (q.endsWith(sfx.suffix) && q.length > sfx.suffix.length + 2) {
+        const rawStem = q.slice(0, -sfx.suffix.length);
+        const candidates = sfx.generateCandidates(rawStem);
+        for (const cand of candidates) {
+          const isSb = sbMap && sbMap[cand] !== undefined;
+          const isAdj = adjMap && adjMap[cand] !== undefined;
+          const isVb = verbMap && verbMap[cand] !== undefined;
+
+          let matchedPos: 'sb' | 'adj' | 'vb' | null = null;
+          if (sfx.allowedBasePos.includes('sb') && isSb) matchedPos = 'sb';
+          else if (sfx.allowedBasePos.includes('adj') && isAdj) matchedPos = 'adj';
+          else if (sfx.allowedBasePos.includes('vb') && isVb) matchedPos = 'vb';
+
+          if (matchedPos) {
+            const catName = matchedPos === 'sb' ? 'Substantivo' : (matchedPos === 'vb' ? 'Verbo' : 'Adjectivo');
+            return {
+              category: 'ia_suffixed' as const,
+              sourceWord: q,
+              stem: cand,
+              stemCategory: catName,
+              suffix: sfx.suffix,
+              desc: sfx.desc,
+              formula: `Derivation "${cand}" (${catName}) + "-${sfx.suffix}" [IALA ${sfx.ruleRef}]`
+            };
+          }
+        }
+      }
+    }
+
     return null;
   }
 
@@ -1477,6 +1615,38 @@ import type { IALAConjugatorAPI, AdjParadigm, NounParadigm, AnalysisResult, Coll
           word: orig, root: matchedAdj, pos: 'adv', status: 'derived',
           desc: `Adverbio regular derivate in -mente de "${matchedAdj}" (IALA §45)`,
           dictEntry: [orig, 'adv', `Adverbio derivate de ${matchedAdj}`]
+        };
+      }
+    }
+
+    // 1.e Superlativo absolute synthetic in -issime / -hissime (IALA §36)
+    if (low.endsWith('hissime') && low.length > 7) {
+      const candC = low.slice(0, -7) + 'c';
+      if ((adjMap && adjMap[candC] !== undefined) || (dictMulti && dictMulti[candC])) {
+        return {
+          word: orig, root: candC, pos: 'adj', status: 'derived',
+          desc: `Superlativo absolute (-hissime) de "${candC}" (IALA §36)`,
+          dictEntry: [orig, 'adj', `Superlativo absolute de ${candC}`]
+        };
+      }
+    }
+    if (low.endsWith('issime') && low.length > 6) {
+      const stem = low.slice(0, -6);
+      const candE = stem + 'e';
+      const candA = stem + 'a';
+      const candO = stem + 'o';
+      let matchedBase: string | null = null;
+      for (const cand of [stem, candE, candA, candO]) {
+        if ((adjMap && adjMap[cand] !== undefined) || (dictMulti && dictMulti[cand] && (dictMulti[cand] as string[][]).some(e => (e[1] || '').includes('adj')))) {
+          matchedBase = cand;
+          break;
+        }
+      }
+      if (matchedBase) {
+        return {
+          word: orig, root: matchedBase, pos: 'adj', status: 'derived',
+          desc: `Superlativo absolute (-issime) de "${matchedBase}" (IALA §36)`,
+          dictEntry: [orig, 'adj', `Superlativo absolute de ${matchedBase}`]
         };
       }
     }
@@ -1768,17 +1938,30 @@ import type { IALAConjugatorAPI, AdjParadigm, NounParadigm, AnalysisResult, Coll
 
     // 8. Entrada directa en el Diccionario
     if (dictMulti[low]) {
-      const entries = dictMulti[low];
-      const chosen = (entries as string[][])[0]!;
-      if (entries.length > 1) {
-        if (['le', 'un', 'del', 'al'].includes(prevLow)) {
-          const sbChoice = (entries as string[][]).find((e: string[]) => (e[1] ?? '').includes('sb'));
-          if (sbChoice) { (entries as string[][])[0] = sbChoice; }
+      const entries = dictMulti[low] as string[][];
+      let chosen = entries[0]!;
+      
+      // Si le parola possede entratas dual (p.ex. sb e adj como in -ista), harmonisar le representation
+      const hasSb = entries.some(e => (e[1] ?? '').includes('sb'));
+      const hasAdj = entries.some(e => (e[1] ?? '').includes('adj'));
+      
+      let mergedPos = chosen[1]!;
+      if (hasSb && hasAdj) {
+        mergedPos = 'sb/adj';
+        // Si es precedite per determinante nominal o articulo, prioritizar le rolo substantive
+        if (['le', 'un', 'del', 'al', 'iste', 'ille', 'nostre', 'vostre', 'su'].includes(prevLow)) {
+          const sbChoice = entries.find(e => (e[1] ?? '').includes('sb'));
+          if (sbChoice) chosen = sbChoice;
+        }
+      } else if (entries.length > 1) {
+        if (['le', 'un', 'del', 'al', 'iste', 'ille', 'nostre', 'vostre', 'su'].includes(prevLow)) {
+          const sbChoice = entries.find(e => (e[1] ?? '').includes('sb'));
+          if (sbChoice) chosen = sbChoice;
         }
       }
       return {
-        word: orig, root: chosen[0]!, pos: chosen[1]!, status: 'exact',
-        desc: `Entrata directa (${chosen[1]!.toUpperCase()})`,
+        word: orig, root: chosen[0]!, pos: mergedPos, status: 'exact',
+        desc: `Entrata directa (${mergedPos.toUpperCase()})`,
         dictEntry: chosen
       };
     }
@@ -1821,6 +2004,36 @@ import type { IALAConjugatorAPI, AdjParadigm, NounParadigm, AnalysisResult, Coll
             desc: `Derivation con prefixo "${pref.p}-" (${pref.desc}) super "${stem}" (${basePos.toUpperCase()}) [IALA §155]`,
             dictEntry: [orig, basePos, `Derivate de ${stem}`]
           };
+        }
+      }
+    }
+
+    // 10.c Derivation regulari con suffixos productivos (IALA §§136-154) - e.g. nutritionista -> nutrition + -ista
+    for (const sfx of PRODUCTIVE_SUFFIXES) {
+      if (low.endsWith(sfx.suffix) && low.length > sfx.suffix.length + 2) {
+        const rawStem = low.slice(0, -sfx.suffix.length);
+        const candidates = sfx.generateCandidates(rawStem);
+        for (const cand of candidates) {
+          if (dictMulti[cand]) {
+            const baseEntries = dictMulti[cand] as string[][];
+            // Verificar si ulle entrata del radice concorda con le categorias grammatical permittite
+            const matchedEntry = baseEntries.find(e => {
+              const p = (e[1] || '').toLowerCase();
+              return sfx.allowedBasePos.some(allowed => p.includes(allowed));
+            });
+
+            if (matchedEntry) {
+              const basePos = (matchedEntry[1] || '').toUpperCase();
+              return {
+                word: orig,
+                root: cand,
+                pos: sfx.resultingPos,
+                status: 'derived',
+                desc: `Derivation regulari in "-${sfx.suffix}" (${sfx.desc}) super le radice "${cand}" (${basePos}) [IALA ${sfx.ruleRef}]`,
+                dictEntry: [orig, sfx.resultingPos, `Derivate regulari de ${cand} (${basePos}): ${sfx.desc}`]
+              };
+            }
+          }
         }
       }
     }

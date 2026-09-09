@@ -127,6 +127,7 @@ export interface AnalysisResult {
   stem?: string;
   stemCategory?: string;
   prefix?: string;
+  suffix?: string;
   data?: VerbDeconjugation;
   dictEntry?: RawDictEntry | unknown[];
   isIrregular?: boolean;

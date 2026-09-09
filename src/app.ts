@@ -625,6 +625,39 @@ import './components/AudioConfigModal';
       return match.stem ?? null;
     }
 
+    if (match.category === 'ia_suffixed') {
+      morphologyBanner.innerHTML = `
+        <div class="banner-header">
+          <div class="banner-title-area">
+            <div class="banner-icon">🌿</div>
+            <div>
+              <div class="banner-title">Derivation per Suffixo: <em>${match.sourceWord}</em></div>
+              <div class="banner-subtitle">
+                Radice lexical: <strong>${match.stem}</strong> (${match.stemCategory}) &bull; Formula: <code>${match.formula}</code>
+              </div>
+            </div>
+          </div>
+          <span class="banner-badge">Derivation IALA §§136-154</span>
+        </div>
+
+        <div class="conjugation-insights">
+          <div class="insight-card">
+            <div class="insight-label">Parola Radice</div>
+            <div class="insight-val accent">${match.stem}</div>
+          </div>
+          <div class="insight-card">
+            <div class="insight-label">Suffixo Productive</div>
+            <div class="insight-val accent">-${match.suffix}</div>
+          </div>
+          <div class="insight-card">
+            <div class="insight-label">Function del Suffixo</div>
+            <div class="insight-val" style="font-size:0.95rem;">${match.desc}</div>
+          </div>
+        </div>
+      `;
+      return match.stem ?? null;
+    }
+
     return null;
   }
 
@@ -1151,7 +1184,21 @@ import './components/AudioConfigModal';
           </div>
         `;
       }
-    } else if (pos.includes('adj') && morpho) {
+    } else if (status === 'derived' && morpho) {
+      const plInfo = morpho.pluralizeNoun(word);
+      extraDetails = `
+        <div style="margin-top: 14px;">
+          <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px;">
+            Flexion e Derivation (IALA §§136-154)
+          </div>
+          <div style="font-size: 0.88rem; line-height: 1.6; color: var(--text-secondary);">
+            &bull; <strong>Singular:</strong> ${word}<br>
+            &bull; <strong>Plural:</strong> ${plInfo ? plInfo.plural : word + 's'}<br>
+            &bull; <em>Derivation regulari super le radice "${root}"</em>
+          </div>
+        </div>
+      `;
+    } else if (pos.includes('adj') && !pos.includes('sb') && morpho) {
       const p = morpho.inflectAdjective(root);
       if (p) {
         const substText = p.isInvariantSubstantive 
@@ -1173,7 +1220,8 @@ import './components/AudioConfigModal';
         `;
       }
     } else if (pos.includes('sb') && morpho) {
-      const n = morpho.pluralizeNoun(root);
+      const targetWord = (status === 'derived' || status === 'prefixed') ? word : root;
+      const n = morpho.pluralizeNoun(targetWord);
       if (n) {
         extraDetails = `
           <div style="margin-top: 14px;">

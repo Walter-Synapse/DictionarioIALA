@@ -20354,6 +20354,7 @@ export const DICTIONARIO_DATA: readonly RawDictEntry[] = [
   ["guatemaltec", "adj", ""],
   ["guatemalteco", "sb", ""],
   ["guayaco", "sb", ""],
+  ["guayaba", "sb", ""],
   ["guayava", "sb", ""],
   ["gubia", "sb", ""],
   ["guelfe", "adj", ""],
