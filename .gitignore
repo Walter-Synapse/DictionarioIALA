@@ -18,6 +18,18 @@ Thumbs.db
 .firebase/
 DOC.md
 
+# Artifacts
+releases/
+src-tauri/target/
+src-tauri/gen/android/build/
+src-tauri/gen/android/app/build/
+src-tauri/gen/android/.gradle/
+*.keystore
+*.jks
+keystore.properties
+
+
+
 
 # node_modules
 node_modules/*

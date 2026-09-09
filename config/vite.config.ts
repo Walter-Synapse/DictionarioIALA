@@ -10,7 +10,7 @@ export default defineConfig({
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.png', 'fonts/**/*.{css,woff2}'],
+      includeAssets: ['favicon.png', 'fonts/**/*.{css,woff2,ttf}'],
       manifest: {
         name: 'Dictionario & Motor Morphologic de Interlingua (IALA)',
         short_name: 'DictionarioIALA',
@@ -42,7 +42,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: [
-          '**/*.{js,css,html,ico,png,svg,json,woff2,webmanifest}'
+          '**/*.{js,css,html,ico,png,svg,json,woff2,ttf,webmanifest}'
         ],
         clientsClaim: true,
         skipWaiting: true,

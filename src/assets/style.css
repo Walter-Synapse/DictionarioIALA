@@ -827,7 +827,7 @@ body {
 }
 
 .word-ipa {
-  font-family: 'Consolas', 'Lucida Console', monospace;
+  font-family: 'LibertinusMath', 'Segoe UI Symbol', 'Lucida Sans Unicode', 'Consolas', monospace;
   font-size: 11px;
   color: var(--win-accent-blue);
   white-space: nowrap;
@@ -1674,7 +1674,8 @@ body {
 }
 
 .modal-pronunciation-text {
-  font-size: 12px;
+  font-family: 'LibertinusMath', 'Lora', Georgia, serif;
+  font-size: 13px;
   color: var(--win-text-muted);
 }
 
@@ -2346,7 +2347,7 @@ body[data-style="modern"] .modal-word-title u.stress-irregular {
 }
 
 body[data-style="modern"] .word-ipa {
-  font-family: 'Consolas', 'Courier New', monospace;
+  font-family: 'LibertinusMath', 'Segoe UI Symbol', 'Lucida Sans Unicode', monospace;
   font-size: 11px;
   color: var(--bib-laurel);
 }

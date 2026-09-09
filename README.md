@@ -11,7 +11,8 @@
 [![Vocabulary: 51.511](https://img.shields.io/badge/Lexico-51.511%20Entratas-blue.svg?style=flat-square)](data.js)
 [![Phonetics: IPA](https://img.shields.io/badge/Phonetica-IPA%20%28IALA%20%C2%A710%29-emerald.svg?style=flat-square)](src/conjugator.ts)
 [![Grammar: Gode & Blair](https://img.shields.io/badge/Grammatica-IALA%201951-purple.svg?style=flat-square)](src/assets/Grammatica_de_Interlingua.md)
-[![Zero Dependencies](https://img.shields.io/badge/Dependentias-0%20%28Vanilla%20Web%29-brightgreen.svg?style=flat-square)](index.html)
+[![PWA Ready](https://img.shields.io/badge/PWA-Installabile%20%26%20100%25%20Offline-blueviolet.svg?style=flat-square)](index.html)
+[![Tauri v2 Mobile](https://img.shields.io/badge/Android-APK%20Tauri%20v2-24c8db.svg?style=flat-square)](src-tauri)
 [![Offline Ready](https://img.shields.io/badge/Autonome-100%25%20Local-orange.svg?style=flat-square)](index.html)
 
 </div>
@@ -126,20 +127,43 @@ Aperi tu navigator in `http://localhost:3000` (o directemente `index.html`) pro 
 
 ```text
 DictionarioIALA/
-├── index.html                  # Interfacie de usator unificate (Windows 95 + Moderne)
-├── package.json                # Definition de scripts e dependentias del projecto
+├── index.html                  # Interfacie de usator unificate (Windows 95 + Moderne) con PWA
+├── package.json                # Definition de scripts e dependentias (Vite, TypeScript, Tauri v2)
 ├── tsconfig.json               # Configuration radice del compilator TypeScript
-├── vite.config.ts              # Configuration del servitor Vite (porto 1951)
+├── vite.config.ts              # Configuration de Vite con VitePWA e Service Worker offline
+├── version.json                # Fonte de veritate del version incremental (1.X) in Git
+├── favicon.png                 # Icono radice de interfacie
 ├── firebase.json               # Configuration de allogiamento web Firebase (public: "dist")
 ├── .firebaserc                 # Identification del projecto de allogiamento Firebase
 ├── LICENSE                     # Licentia MIT de codice aperte
 ├── README.md                   # Documento e manifesto del thesauro
+├── public/                     # Recursos staticos pro web, PWA e precache offline
+│   ├── favicon.png             # Favicon
+│   ├── logo-interlingua.svg    # Emblema vectoral official de IALA (stella auree super #003698)
+│   ├── pwa-192x192.png         # Icono PWA standard
+│   ├── pwa-512x512.png         # Icono PWA in alte resolution
+│   ├── pwa-512x512-maskable.png# Icono PWA adaptative con area de securitate
+│   ├── version.json            # Metadatos de version legibile pro clientes
+│   └── fonts/                  # Typographias variabiles 100% locales (zero requirimentos de rete)
+│       ├── fonts.css           # Definitiones @font-face
+│       ├── Cinzel-Variable.woff2
+│       ├── Lora-Regular.woff2
+│       ├── Lora-Italic.woff2
+│       └── PlusJakartaSans-Variable.woff2
 ├── config/                     # Configurationes de infrastructura, Vite, TypeScript e ESLint
-│   ├── vite.config.ts          # Definition de fasciculo e porto del servitor
+│   ├── vite.config.ts          # Definition de fasciculo, service worker e porto del servitor
 │   ├── tsconfig.json           # Parametros strict de verification de typos
 │   └── eslint.config.js        # Regulas de inspection de codice
+├── src-tauri/                  # Application native de scriptorio e mobile (Tauri v2 + Rust)
+│   ├── Cargo.toml              # Dependentias Rust
+│   ├── build.rs                # Compilator native de Tauri
+│   ├── tauri.conf.json         # Configuration de pacchetto, fenestras e icones native
+│   ├── capabilities/           # Politicas de securitate e permisos de Tauri
+│   ├── icons/                  # Icones native pro desktop e Android
+│   ├── gen/android/            # Projecto Gradle de Android Studio autogenerate
+│   └── src/                    # Nucleo Rust de lanceamento
 └── src/                        # Codice fonte modularisate in TypeScript
-    ├── main.ts                 # Puncto de entrata TypeScript del application
+    ├── main.ts                 # Puncto de entrata TypeScript e registro del Service Worker PWA
     ├── app.ts                  # Logica de interfacie, eventos e vistas
     ├── conjugator.ts           # Motor morphologic, flexion verbal e decomposition
     ├── transcriber.ts          # Transcriptor phonetic e notation IPA (IALA §10)
@@ -151,7 +175,11 @@ DictionarioIALA/
     ├── components/             # Componentes de UI modular (AudioConfigModal.ts)
     ├── config/                 # Configurators de ambiente runtime
     ├── data/                   # Thesauro lexicographic de 51.511 parolas
-    │   └── data.ts             # Base de datos lexicographic in TypeScript (Cleij & Breinstrup)
+    │   ├── data.ts             # Base de datos lexicographic in TypeScript (Cleij & Breinstrup)
+    │   └── full_ceid.json      # Dictionario lexicographic structural complete
+    ├── scripts/                # Scripts de automatisation e compilation
+    │   ├── build.sh            # Versionator automatic (1.X) e emppacchettator dist/
+    │   └── build_android.sh    # Compilator APK Android que move le pacchetto a releases/
     └── types/                  # Definitiones de typos e interfaces TypeScript
 ```
 

@@ -17,11 +17,13 @@
 'use strict';
 
 // URL del proxy Cloudflare Worker — le clave API non es jammais exposta al cliente
+import { PROXY_URL } from './env';
+
 function getProxyEndpoint(): string | null {
   if (window.__IALA_CONFIG__?.VOX_PROXY_URL) {
     return window.__IALA_CONFIG__.VOX_PROXY_URL;
   }
-  return null;
+  return PROXY_URL || null;
 }
 
 const LANG_CODE = 'it-IT';
