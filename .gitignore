@@ -5,6 +5,8 @@
 env.js
 build.sh
 dist/
+dist_web/
+dist_tauri/
 
 # OS and Editor files
 .DS_Store

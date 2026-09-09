@@ -1,13 +1,13 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "DictionarioIALA",
-  "version": "1.5.0",
+  "version": "1.8.0",
   "identifier": "com.dictionarioiala.app",
   "build": {
-    "frontendDist": "../dist",
+    "frontendDist": "../dist_tauri",
     "devUrl": "http://localhost:1951",
     "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run build"
+    "beforeBuildCommand": "npm run build:tauri"
   },
   "app": {
     "windows": [

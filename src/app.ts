@@ -877,7 +877,7 @@ import './components/AudioConfigModal';
     modalPosTag.textContent = pos ? pos.toUpperCase() : 'GENERAL';
 
     const ipaStr = (morpho && morpho.getInterlinguaIPA) ? morpho.getInterlinguaIPA(wordPlain, item[2]) : '';
-    const ipaHtml = ipaStr ? `<span style="display: inline-block; margin-left: 8px; padding: 2px 8px; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 4px; font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent-blue); font-weight: 600;">IPA: ${ipaStr}</span>` : '';
+    const ipaHtml = ipaStr ? `<span style="display: inline-block; margin-left: 8px; padding: 2px 8px; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 4px; font-family: 'LibertinusMath', 'Segoe UI Symbol', monospace; font-size: 0.85rem; color: var(--accent-blue); font-weight: 600;">IPA: ${ipaStr}</span>` : '';
 
     modalPronunciation.innerHTML = getPronunciationHtml(stressInfo, item[2], ipaHtml);
     modalIEDLink.href = getIEDUrl(wordPlain);
@@ -1256,7 +1256,7 @@ import './components/AudioConfigModal';
           <h3 class="word-text" style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary);">${inspectorWordHtml}</h3>
           <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
             <span style="font-size: 0.88rem; color: var(--accent-blue); font-weight: 600;">Radice: ${root}</span>
-            ${ipaStr ? `<code style="font-family: var(--font-mono); font-size: 0.8rem; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.25); padding: 1px 6px; border-radius: 4px; color: var(--accent-blue);">${ipaStr}</code>` : ''}
+            ${ipaStr ? `<code style="font-family: 'LibertinusMath', 'Segoe UI Symbol', monospace; font-size: 0.8rem; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.25); padding: 1px 6px; border-radius: 4px; color: var(--accent-blue);">${ipaStr}</code>` : ''}
           </div>
         </div>
         <span class="pos-tag ${posClass}">${pos.toUpperCase()}</span>

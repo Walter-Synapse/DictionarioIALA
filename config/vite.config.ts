@@ -7,6 +7,15 @@ export default defineConfig({
     port: 1951,
     strictPort: true
   },
+  build: {
+    outDir: process.env.BUILD_TARGET === 'tauri' ? '../dist_tauri' : '../dist_web',
+    emptyOutDir: true,
+    rollupOptions: {
+      input: {
+        main: './index.html',
+      },
+    },
+  },
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
@@ -49,12 +58,5 @@ export default defineConfig({
         maximumFileSizeToCacheInBytes: 15 * 1024 * 1024
       }
     })
-  ],
-  build: {
-    rollupOptions: {
-      input: {
-        main: './index.html',
-      },
-    },
-  },
+  ]
 });

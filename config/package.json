@@ -1,6 +1,6 @@
 {
   "name": "dictionarioiala",
-  "version": "1.5.0",
+  "version": "1.8.0",
   "description": "Dictionario electronic e motor morphologic de Interlingua (IALA)",
   "type": "module",
   "scripts": {
@@ -8,6 +8,8 @@
     "type-check": "tsc --project config/tsconfig.json --noEmit",
     "lint": "eslint --config config/eslint.config.js src/",
     "build": "tsc --project config/tsconfig.json && vite build --config config/vite.config.ts",
+    "build:web": "tsc --project config/tsconfig.json && vite build --config config/vite.config.ts",
+    "build:tauri": "tsc --project config/tsconfig.json && BUILD_TARGET=tauri vite build --config config/vite.config.ts",
     "dev": "vite --config config/vite.config.ts"
   },
   "devDependencies": {

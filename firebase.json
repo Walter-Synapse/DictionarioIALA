@@ -1,7 +1,7 @@
 {
   "hosting": {
     "site": "interlingua-iala",
-    "public": "dist",
+    "public": "dist_web",
     "ignore": [
       "firebase.json",
       ".firebaserc",
