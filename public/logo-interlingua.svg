@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Solid / Crisp IALA Blue Background -->
+    <radialGradient id="bg-grad" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#0545b5"/>
+      <stop offset="60%" stop-color="#003698"/>
+      <stop offset="100%" stop-color="#00256d"/>
+    </radialGradient>
+
+    <!-- 4 Chamfered Facets of the Gold 4-Pointed Star -->
+    <!-- Facet 1: Top-Right (Direct Highlight) -->
+    <linearGradient id="gold-light" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff8dc"/>
+      <stop offset="35%" stop-color="#fdd761"/>
+      <stop offset="100%" stop-color="#d49a1e"/>
+    </linearGradient>
+
+    <!-- Facet 2: Top-Left (Mid Tone) -->
+    <linearGradient id="gold-mid" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f8e58c"/>
+      <stop offset="50%" stop-color="#c88e17"/>
+      <stop offset="100%" stop-color="#9a6507"/>
+    </linearGradient>
+
+    <!-- Facet 3: Bottom-Left (Deep Shadow) -->
+    <linearGradient id="gold-shadow" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#996306"/>
+      <stop offset="60%" stop-color="#694101"/>
+      <stop offset="100%" stop-color="#462a00"/>
+    </linearGradient>
+
+    <!-- Facet 4: Bottom-Right (Warm Metallic Bounce) -->
+    <linearGradient id="gold-refl" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f7da6d"/>
+      <stop offset="50%" stop-color="#ba8212"/>
+      <stop offset="100%" stop-color="#7c5104"/>
+    </linearGradient>
+
+    <!-- Crisp clean star drop-shadow -->
+    <filter id="star-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#001844" flood-opacity="0.8"/>
+    </filter>
+  </defs>
+
+  <!-- Background Base #003698 -->
+  <rect width="512" height="512" fill="url(#bg-grad)"/>
+
+  <!-- Subtle Elegant Circular Border -->
+  <circle cx="256" cy="256" r="218" fill="none" stroke="#f6d365" stroke-width="2.5" stroke-opacity="0.35"/>
+
+  <!-- 4-Pointed IALA Compass Star: Pure geometric convergence at (256, 256) -->
+  <!-- Tips: North(256, 56), East(456, 256), South(256, 456), West(56, 256) -->
+  <!-- Inner indent vertices: (288, 224), (288, 288), (224, 288), (224, 224) -->
+  <g filter="url(#star-shadow)">
+    <!-- North-East Quadrant -->
+    <polygon points="256,56 256,256 288,224" fill="url(#gold-light)"/>
+    <polygon points="456,256 256,256 288,224" fill="url(#gold-mid)"/>
+
+    <!-- South-East Quadrant -->
+    <polygon points="456,256 256,256 288,288" fill="url(#gold-light)"/>
+    <polygon points="256,456 256,256 288,288" fill="url(#gold-refl)"/>
+
+    <!-- South-West Quadrant -->
+    <polygon points="256,456 256,256 224,288" fill="url(#gold-shadow)"/>
+    <polygon points="56,256 256,256 224,288" fill="url(#gold-mid)"/>
+
+    <!-- North-West Quadrant -->
+    <polygon points="56,256 256,256 224,224" fill="url(#gold-shadow)"/>
+    <polygon points="256,56 256,256 224,224" fill="url(#gold-mid)"/>
+  </g>
+</svg>
