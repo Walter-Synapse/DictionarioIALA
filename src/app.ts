@@ -1,22 +1,29 @@
+import type { VerbParadigm, AdjParadigm, NounParadigm, AnalysisResult, RawDictEntry } from './types/global';
+import './conjugator';
+import './transcriber';
+import './tts';
+import './components/AudioConfigModal';
+
 (function() {
-  const data = window.DICTIONARIO_DATA || [];
+  const data: readonly RawDictEntry[] = (window as Window & { DICTIONARIO_DATA?: readonly RawDictEntry[] }).DICTIONARIO_DATA || [];
   const morpho = window.IALAConjugator;
 
-  // Build fast indexes of Verbs, Adjectives, Nouns, Adverbs and Multi-entries (prototype-safe)
-  const dictMap = Object.create(null);
-  const dictMulti = Object.create(null);
-  const verbMap = Object.create(null);
-  const adjMap = Object.create(null);
-  const sbMap = Object.create(null);
-  const advMap = Object.create(null);
+  // Indices rapide de Verbos, Adjectivos, Substantivos, Adverbios e Multi-entrattas (prototype-safe)
+  const dictMap = Object.create(null) as Record<string, readonly [string, string, string, string?, string?]>;
+  const dictMulti = Object.create(null) as Record<string, Array<readonly [string, string, string, string?, string?]>>;
+  const verbMap = Object.create(null) as Record<string, number>;
+  const adjMap = Object.create(null) as Record<string, number>;
+  const sbMap = Object.create(null) as Record<string, number>;
+  const advMap = Object.create(null) as Record<string, number>;
 
   for (let i = 0; i < data.length; i++) {
     const item = data[i];
-    const wordLower = item[0].toLowerCase();
+    if (!item) continue;
+    const wordLower = (item[0] || '').toLowerCase();
     const pos = (item[1] || '').toLowerCase();
 
     if (!dictMulti[wordLower]) dictMulti[wordLower] = [];
-    dictMulti[wordLower].push(item);
+    dictMulti[wordLower]!.push(item);
 
     dictMap[wordLower] = item;
     if (pos.includes('vb')) verbMap[wordLower] = i;
@@ -25,15 +32,15 @@
     if (pos.includes('adv')) advMap[wordLower] = i;
   }
 
-  // Canonical contractions and essential particles (IALA §17, §21)
+  // Contractiones canonicas e particulas essentiales (IALA §17, §21)
   dictMulti['al'] = [['al', 'prep + art def', '']];
   dictMulti['del'] = [['del', 'prep + art def', '']];
   dictMulti['iala'] = [['IALA', 'npr (acronymo)', '']];
 
   const vocabList = Object.keys(dictMulti);
 
-  // State
-  let currentView = 'search'; // 'search' or 'analyzer'
+  // Stato
+  let currentView = 'search'; // 'search' o 'analyzer'
   let searchTerm = '';
   let activeLetter = 'ALL';
   let activePos = 'ALL';
@@ -41,92 +48,95 @@
   let stressFilter = 'ALL'; // 'ALL', 'stressed', 'regular'
   let currentPage = 1;
   const pageSize = 48;
-  let filteredIndices = [];
-  
-  // DOM Elements - Navigation Tabs
-  const tabBtnSearch = document.getElementById('tab-btn-search');
-  const tabBtnAnalyzer = document.getElementById('tab-btn-analyzer');
-  const viewDictionary = document.getElementById('view-dictionary');
-  const viewAnalyzer = document.getElementById('view-analyzer');
+  let filteredIndices: number[] = [];
 
-  // DOM Elements - Search View
-  const searchInput = document.getElementById('search-input');
-  const clearBtn = document.getElementById('clear-btn');
-  const searchStats = document.getElementById('search-stats');
-  const wordsGrid = document.getElementById('words-grid');
-  const paginationContainer = document.getElementById('pagination');
-  const alphaNav = document.getElementById('alphabet-nav');
-  const morphologyBanner = document.getElementById('morphology-banner');
-  
-  // DOM Elements - Analyzer View
-  const analyzerInputText = document.getElementById('analyzer-input-text');
-  const btnAnalyzeRun = document.getElementById('btn-analyze-run');
-  const btnAnalyzeSample = document.getElementById('btn-analyze-sample');
-  const btnAnalyzeClear = document.getElementById('btn-analyze-clear');
-  const analyzerOutputArea = document.getElementById('analyzer-output-area');
-  const analyzerStatsBadges = document.getElementById('analyzer-stats-badges');
-  const interactiveReaderBody = document.getElementById('interactive-reader-body');
-  const inspectorContent = document.getElementById('inspector-content');
+  // Elementos DOM - Tabs de Navigation
+  const tabBtnSearch = document.getElementById('tab-btn-search') as HTMLButtonElement | null;
+  const tabBtnAnalyzer = document.getElementById('tab-btn-analyzer') as HTMLButtonElement | null;
+  const viewDictionary = document.getElementById('view-dictionary') as HTMLElement | null;
+  const viewAnalyzer = document.getElementById('view-analyzer') as HTMLElement | null;
 
-  // Modal Elements
-  const modalBackdrop = document.getElementById('modal-backdrop');
-  const modalClose = document.getElementById('modal-close');
-  const modalWordTitle = document.getElementById('modal-word-title');
-  const modalPosTag = document.getElementById('modal-pos-tag');
-  const modalPronunciation = document.getElementById('modal-pronunciation');
-  const modalDefinitions = document.getElementById('modal-definitions');
-  const modalSpeakBtn = document.getElementById('modal-speak-btn');
-  const modalCopyBtn = document.getElementById('modal-copy-btn');
-  const modalIEDLink = document.getElementById('modal-ied-link');
-  const modalMorphologySection = document.getElementById('modal-morphology-section');
-  
-  const themeToggle = document.getElementById('theme-toggle');
-  const styleToggle = document.getElementById('style-toggle');
-  
-  let currentModalWord = null;
-  let currentAnalyzedTokens = [];
+  // Elementos DOM - Vista de Busca
+  const searchInput = document.getElementById('search-input') as HTMLInputElement | null;
+  const clearBtn = document.getElementById('clear-btn') as HTMLButtonElement | null;
+  const searchStats = document.getElementById('search-stats') as HTMLElement | null;
+  const wordsGrid = document.getElementById('words-grid') as HTMLElement | null;
+  const paginationContainer = document.getElementById('pagination') as HTMLElement | null;
+  const alphaNav = document.getElementById('alphabet-nav') as HTMLElement | null;
+  const morphologyBanner = document.getElementById('morphology-banner') as HTMLElement | null;
 
-  // Tab View Switcher
-  function switchView(view) {
+  // Elementos DOM - Vista de Analysator
+  const analyzerInputText = document.getElementById('analyzer-input-text') as HTMLTextAreaElement | null;
+  const btnAnalyzeRun = document.getElementById('btn-analyze-run') as HTMLButtonElement | null;
+  const btnAnalyzeSample = document.getElementById('btn-analyze-sample') as HTMLButtonElement | null;
+  const btnAnalyzeClear = document.getElementById('btn-analyze-clear') as HTMLButtonElement | null;
+  const analyzerOutputArea = document.getElementById('analyzer-output-area') as HTMLElement | null;
+  const analyzerStatsBadges = document.getElementById('analyzer-stats-badges') as HTMLElement | null;
+  const interactiveReaderBody = document.getElementById('interactive-reader-body') as HTMLElement | null;
+  const inspectorContent = document.getElementById('inspector-content') as HTMLElement | null;
+
+  // Elementos del Modal
+  const modalBackdrop = document.getElementById('modal-backdrop') as HTMLElement | null;
+  const modalClose = document.getElementById('modal-close') as HTMLButtonElement | null;
+  const modalWordTitle = document.getElementById('modal-word-title') as HTMLElement | null;
+  const modalPosTag = document.getElementById('modal-pos-tag') as HTMLElement | null;
+  const modalPronunciation = document.getElementById('modal-pronunciation') as HTMLElement | null;
+  const modalDefinitions = document.getElementById('modal-definitions') as HTMLElement | null;
+  const modalSpeakBtn = document.getElementById('modal-speak-btn') as HTMLButtonElement | null;
+  const modalCopyBtn = document.getElementById('modal-copy-btn') as HTMLButtonElement | null;
+  const modalIEDLink = document.getElementById('modal-ied-link') as HTMLAnchorElement | null;
+  const modalMorphologySection = document.getElementById('modal-morphology-section') as HTMLElement | null;
+
+  const themeToggle = document.getElementById('theme-toggle') as HTMLElement | null;
+  const styleToggle = document.getElementById('style-toggle') as HTMLElement | null;
+
+  let currentModalWord: string | null = null;
+  let currentAnalyzedTokens: AnalysisResult[] = [];
+
+  // Commutator de Vistas
+  function switchView(view: string): void {
     currentView = view;
     if (view === 'search') {
-      tabBtnSearch.classList.add('active');
-      tabBtnAnalyzer.classList.remove('active');
-      viewDictionary.style.display = 'block';
-      viewAnalyzer.style.display = 'none';
+      tabBtnSearch!.classList.add('active');
+      tabBtnAnalyzer!.classList.remove('active');
+      (viewDictionary as HTMLElement).style.display = 'block';
+      (viewAnalyzer as HTMLElement).style.display = 'none';
     } else {
-      tabBtnAnalyzer.classList.add('active');
-      tabBtnSearch.classList.remove('active');
-      viewDictionary.style.display = 'none';
-      viewAnalyzer.style.display = 'block';
+      tabBtnAnalyzer!.classList.add('active');
+      tabBtnSearch!.classList.remove('active');
+      (viewDictionary as HTMLElement).style.display = 'none';
+      (viewAnalyzer as HTMLElement).style.display = 'block';
     }
   }
 
-  tabBtnSearch.addEventListener('click', () => switchView('search'));
-  tabBtnAnalyzer.addEventListener('click', () => switchView('analyzer'));
+  tabBtnSearch!.addEventListener('click', () => switchView('search'));
+  tabBtnAnalyzer!.addEventListener('click', () => switchView('analyzer'));
 
-  // Alphabet navigation
+  // Navigation alphabetic
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('');
-  function renderAlphabetNav() {
+  function renderAlphabetNav(): void {
     let html = `<button class="alpha-btn active" data-letter="ALL">Tote</button>`;
     alphabet.forEach(letter => {
       html += `<button class="alpha-btn" data-letter="${letter}">${letter}</button>`;
     });
-    alphaNav.innerHTML = html;
+    alphaNav!.innerHTML = html;
 
-    alphaNav.addEventListener('click', (e) => {
-      const btn = e.target.closest('.alpha-btn');
+    alphaNav!.addEventListener('click', function(e: MouseEvent) {
+      if (!e.target) return;
+      const btn = (e.target as Element).closest('button[data-letter]') as HTMLButtonElement | null;
       if (!btn) return;
-      alphaNav.querySelectorAll('.alpha-btn').forEach(b => b.classList.remove('active'));
+      alphaNav!.querySelectorAll('button').forEach(function(b: Element) {
+        b.classList.remove('active');
+      });
       btn.classList.add('active');
-      activeLetter = btn.dataset.letter;
+      activeLetter = btn.dataset['letter'] ?? 'ALL';
       currentPage = 1;
       filterData();
     });
   }
 
   // POS Class resolver
-  function getPosClass(pos) {
+  function getPosClass(pos: string | undefined): string {
     if (!pos) return 'pos-other';
     const p = pos.toLowerCase();
     if (p.includes('sb')) return 'pos-sb';
@@ -137,16 +147,16 @@
     return 'pos-other';
   }
 
-  function getPosLabel(pos) {
+  function getPosLabel(pos: string | undefined): string {
     if (!pos) return 'General';
     return pos;
   }
 
-  function renderVerbParadigmHTML(p, highlightWord = '') {
+  function renderVerbParadigmHTML(p: VerbParadigm | null, highlightWord = ''): string {
     if (!p) return '';
     const h = (highlightWord || '').toLowerCase().trim();
 
-    function hl(text, isWord = false) {
+    function hl(text: string, isWord = false): string {
       if (!text) return '';
       if (!h) return text;
       // If direct match or text contains the searched word
@@ -215,11 +225,11 @@
     `;
   }
 
-  function renderAdjectiveParadigmHTML(adjData, highlightWord = '') {
+  function renderAdjectiveParadigmHTML(adjData: AdjParadigm | null, highlightWord = ''): string {
     if (!adjData) return '';
     const h = (highlightWord || '').toLowerCase().trim();
 
-    function hl(text) {
+    function hl(text: string): string {
       if (!text || !h) return text;
       const textLower = text.toLowerCase();
       if (textLower === h || textLower.includes(h)) {
@@ -231,11 +241,11 @@
     }
 
     let irregNotice = '';
-    if (adjData.irregular) {
-      const irr = adjData.irregular;
+    if (adjData.irregular && typeof adjData.irregular === 'object') {
+      const irr = adjData.irregular as { comp?: string; sup?: string; adv?: string; advComp?: string };
       irregNotice = `
         <div style="margin-top: 10px; padding: 8px 12px; background: rgba(245, 158, 11, 0.12); border-left: 3px solid var(--accent-amber); border-radius: 4px; font-size: 0.85rem;">
-          <strong>Synonymos Irregular (IALA §37, §47):</strong> Comparativo: <strong>${hl(irr.comp)}</strong> &bull; Superlativo: <strong>${hl(irr.sup)}</strong> &bull; Adverbio: <strong>${hl(irr.adv)}</strong> (${irr.advComp ? hl(irr.advComp) : ''})
+          <strong>Synonymos Irregular (IALA §37, §47):</strong> Comparativo: <strong>${hl(irr.comp ?? '')}</strong> &bull; Superlativo: <strong>${hl(irr.sup ?? '')}</strong> &bull; Adverbio: <strong>${hl(irr.adv ?? '')}</strong> (${irr.advComp ? hl(irr.advComp) : ''})
         </div>
       `;
     }
@@ -295,11 +305,11 @@
     `;
   }
 
-  function renderNounParadigmHTML(nounData, highlightWord = '') {
+  function renderNounParadigmHTML(nounData: NounParadigm | null, highlightWord = ''): string {
     if (!nounData) return '';
     const h = (highlightWord || '').toLowerCase().trim();
 
-    function hl(text) {
+    function hl(text: string): string {
       if (!text || !h) return text;
       const textLower = text.toLowerCase();
       if (textLower === h || textLower.includes(h)) {
@@ -333,16 +343,16 @@
     `;
   }
 
-  /**
-   * Evaluates if search input matches any morphologic pattern
-   */
-  function checkMorphologyMatch(term) {
-    if (!term || term.length < 2 || !morpho) {
-      morphologyBanner.style.display = 'none';
-      morphologyBanner.innerHTML = '';
+  function checkMorphologyMatch(term: string): string | null {
+    if (!term || term.length < 2 || !morpho || !morphologyBanner) {
+      if (morphologyBanner) {
+        morphologyBanner.style.display = 'none';
+        morphologyBanner.innerHTML = '';
+      }
       return null;
     }
 
+    // Evalutia si le termino de cerca coincide con ulle patron morphologic
     const match = morpho.deconstructUniversal(term, dictMap, verbMap, adjMap, sbMap);
     if (!match) {
       morphologyBanner.style.display = 'none';
@@ -352,7 +362,7 @@
 
     morphologyBanner.style.display = 'block';
 
-    if (match.category === 'ia_verb') {
+    if (match.category === 'ia_verb' && match.data) {
       const v = match.data;
       const p = v.paradigm;
       morphologyBanner.innerHTML = `
@@ -372,7 +382,7 @@
         <div class="conjugation-insights">
           <div class="insight-card">
             <div class="insight-label">Infinitivo (Forma Base)</div>
-            <div class="insight-val accent">${v.infinitive} <small style="font-size:0.8rem; color:var(--text-muted);">(radice: ${p.stem}-)</small></div>
+            <div class="insight-val accent">${v.infinitive} <small style="font-size:0.8rem; color:var(--text-muted);">(radice: ${p ? p.stem : ''}-)</small></div>
           </div>
           <div class="insight-card">
             <div class="insight-label">Tempore / Construction</div>
@@ -380,7 +390,7 @@
           </div>
           <div class="insight-card">
             <div class="insight-label">${v.equivalent ? 'Forma Collateral (§108)' : 'Tempore Presente (§99)'}</div>
-            <div class="insight-val">${v.equivalent || p.active_simple.presente}</div>
+            <div class="insight-val">${v.equivalent || (p ? p.active_simple.presente : '')}</div>
           </div>
         </div>
 
@@ -388,14 +398,14 @@
           <strong style="font-size: 0.86rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-secondary);">
             Tabula Complete pro "${v.infinitive}" (IALA §115)
           </strong>
-          <div class="verb-table-container">${renderVerbParadigmHTML(p, v.sourceWord)}</div>
+          <div class="verb-table-container">${renderVerbParadigmHTML(p || null, v.sourceWord)}</div>
         </div>
       `;
       return v.infinitive;
     }
 
-    if (match.category === 'adverb_mente') {
-      const p = match.paradigm;
+    if (match.category === 'adverb_mente' && match.paradigm) {
+      const p = match.paradigm as AdjParadigm;
       morphologyBanner.innerHTML = `
         <div class="banner-header">
           <div class="banner-title-area">
@@ -432,11 +442,12 @@
           <div class="verb-table-container">${renderAdjectiveParadigmHTML(p, match.sourceWord)}</div>
         </div>
       `;
-      return match.baseAdjective;
+      return match.baseAdjective ?? null;
     }
 
-    if (match.category === 'ia_superlative' || match.category === 'es_superlative') {
-      const p = match.paradigm;
+    if ((match.category === 'ia_superlative' || match.category === 'es_superlative') && match.paradigm) {
+      const p = match.paradigm as AdjParadigm;
+      const baseAdjVal = match.baseAdjective || match.iaWord || '';
       morphologyBanner.innerHTML = `
         <div class="banner-header">
           <div class="banner-title-area">
@@ -444,7 +455,7 @@
             <div>
               <div class="banner-title">Superlativo Absolute Detectate: <em>${match.sourceWord}</em></div>
               <div class="banner-subtitle">
-                Radice adjectival: <strong>${match.baseAdjective || match.iaWord}</strong> &bull; Formula: <code>${match.formula || '-issime'}</code>
+                Radice adjectival: <strong>${baseAdjVal}</strong> &bull; Formula: <code>${match.formula || '-issime'}</code>
               </div>
             </div>
           </div>
@@ -454,7 +465,7 @@
         <div class="conjugation-insights">
           <div class="insight-card">
             <div class="insight-label">Adjectivo Base</div>
-            <div class="insight-val accent">${match.baseAdjective || match.iaWord}</div>
+            <div class="insight-val accent">${baseAdjVal}</div>
           </div>
           <div class="insight-card">
             <div class="insight-label">Superlativo Synthetic</div>
@@ -468,15 +479,15 @@
 
         <div style="margin-top: 14px;">
           <strong style="font-size: 0.86rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-secondary);">
-            Grados de Comparation de "${match.baseAdjective || match.iaWord}" (IALA §§34-36)
+            Grados de Comparation de "${baseAdjVal}" (IALA §§34-36)
           </strong>
           <div class="verb-table-container">${renderAdjectiveParadigmHTML(p, match.sourceWord)}</div>
         </div>
       `;
-      return match.baseAdjective || match.iaWord;
+      return baseAdjVal;
     }
 
-    if (match.category === 'ia_plural') {
+    if (match.category === 'ia_plural' && match.nounData) {
       const n = match.nounData;
       morphologyBanner.innerHTML = `
         <div class="banner-header">
@@ -485,7 +496,7 @@
             <div>
               <div class="banner-title">Depluralisation de Substantivo: <em>${match.sourceWord}</em></div>
               <div class="banner-subtitle">
-                Forma singular identificata: <strong>${match.singular}</strong> &bull; ${match.rule}
+                Forma singular identificata: <strong>${n.singular}</strong> &bull; ${match.rule}
               </div>
             </div>
           </div>
@@ -514,11 +525,11 @@
           <div class="verb-table-container">${renderNounParadigmHTML(n, match.sourceWord)}</div>
         </div>
       `;
-      return match.singular;
+      return n.singular;
     }
 
-    if (match.category === 'ia_collateral') {
-      const best = match.matches[0];
+    if (match.category === 'ia_collateral' && match.matches && match.matches.length > 0) {
+      const best = match.matches[0]!;
       morphologyBanner.innerHTML = `
         <div class="banner-header">
           <div class="banner-title-area">
@@ -610,7 +621,7 @@
           </div>
         </div>
       `;
-      return match.stem;
+      return match.stem ?? null;
     }
 
     return null;
@@ -644,22 +655,23 @@
       if (i === prioritizedIdx) continue;
 
       const item = data[i];
-      const word = item[0];
+      if (!item) continue;
+      const word = item[0] || '';
       const wordLower = word.toLowerCase();
-      const pos = item[1];
+      const pos = item[1] || '';
       const hasExplicitStress = !!item[2];
 
       if (isStressedOnly || isRegularOnly) {
         let isIrregular = hasExplicitStress;
         if (!isIrregular && morpho && morpho.computeIALAStressHTML) {
-          isIrregular = morpho.computeIALAStressHTML(word, item[2], pos).isIrregular;
+          isIrregular = morpho.computeIALAStressHTML(word, item[2] || '', pos).isIrregular;
         }
         if (isStressedOnly && !isIrregular) continue;
         if (isRegularOnly && isIrregular) continue;
       }
 
       if (!isAllPos) {
-        if (!pos || !pos.toLowerCase().split(',').map(s => s.trim()).includes(activePos)) {
+        if (!pos || !pos.toLowerCase().split(',').map((s: string) => s.trim()).includes(activePos)) {
           continue;
         }
       }
@@ -689,7 +701,8 @@
     renderResults();
   }
 
-  function renderResults() {
+  function renderResults(): void {
+    if (!searchStats || !wordsGrid || !paginationContainer || !searchInput) return;
     const totalMatches = filteredIndices.length;
     searchStats.innerHTML = `Troivate: <strong>${totalMatches.toLocaleString()}</strong> parolas`;
 
@@ -729,7 +742,7 @@
 
       wordsGrid.querySelectorAll('.search-suggest-chip').forEach(btn => {
         btn.addEventListener('click', () => {
-          const w = btn.getAttribute('data-word');
+          const w = btn.getAttribute('data-word') || '';
           searchInput.value = w;
           searchTerm = w;
           activeLetter = 'ALL';
@@ -753,13 +766,14 @@
     let html = '';
     for (let idx of pageIndices) {
       const item = data[idx];
-      const wordPlain = item[0];
+      if (!item) continue;
+      const wordPlain = item[0] || '';
       const pos = item[1];
       
       // Compute accurate phonologic stress for 100% of words according to IALA §10
       let wordHtml = wordPlain;
       if (morpho && morpho.computeIALAStressHTML) {
-        const stressInfo = morpho.computeIALAStressHTML(wordPlain, item[2], pos);
+        const stressInfo = morpho.computeIALAStressHTML(wordPlain, item[2] || '', pos || '');
         wordHtml = stressInfo.html;
         if (stressInfo.isIrregular) {
           wordHtml = wordHtml.replace('<u>', '<u class="stress-irregular">');
@@ -788,7 +802,8 @@
     renderPagination(totalPages);
   }
 
-  function renderPagination(totalPages) {
+  function renderPagination(totalPages: number): void {
+    if (!paginationContainer) return;
     if (totalPages <= 1) {
       paginationContainer.innerHTML = '';
       return;
@@ -818,17 +833,34 @@
     paginationContainer.innerHTML = html;
   }
 
+  // Fuctiones auxiliar pro modal de parolas e definitiones
+  function getIEDUrl(word: string): string {
+    return `https://www.interlingua.com/ied/cerca/?edit%5Bkeys%5D=${encodeURIComponent(word || '')}&edit%5B0%5D=Cerca`;
+  }
+
+  function getPronunciationHtml(stressInfo: { ruleDesc: string } | null, explicitStress?: string, ipaHtml = ''): string {
+    const ipa = ipaHtml ? ` ${ipaHtml}` : '';
+    if (stressInfo) {
+      return `<strong>Accentuation:</strong> ${stressInfo.ruleDesc}${ipa}`;
+    }
+    if (explicitStress) {
+      return `<strong>Accentuation:</strong> Le vocal accentuate es sublineate explicitemente proque devia del regula general.${ipa}`;
+    }
+    return `<strong>Accentuation:</strong> Regula general de Interlingua (accento sur le vocal ante le ultime consonante).${ipa}`;
+  }
+
   // Modal display for any word type
-  function openWordModal(idx) {
+  function openWordModal(idx: number): void {
     const item = data[idx];
-    const wordPlain = item[0];
+    if (!item) return;
+    const wordPlain = item[0] || '';
     const pos = item[1];
     currentModalWord = wordPlain;
 
     let wordHtml = wordPlain;
-    let stressInfo = null;
+    let stressInfo: { html: string; isIrregular: boolean; ruleDesc: string } | null = null;
     if (morpho && morpho.computeIALAStressHTML) {
-      stressInfo = morpho.computeIALAStressHTML(wordPlain, item[2], pos);
+      stressInfo = morpho.computeIALAStressHTML(wordPlain, item[2] || '', pos || '');
       wordHtml = stressInfo.html;
       if (stressInfo.isIrregular) {
         wordHtml = wordHtml.replace('<u>', '<u class="stress-irregular">');
@@ -837,6 +869,8 @@
       wordHtml = item[2] || wordPlain;
     }
 
+    if (!modalWordTitle || !modalPosTag || !modalPronunciation || !modalIEDLink || !modalMorphologySection || !modalDefinitions || !modalBackdrop) return;
+
     modalWordTitle.innerHTML = wordHtml;
     modalPosTag.className = `pos-tag ${getPosClass(pos)}`;
     modalPosTag.textContent = pos ? pos.toUpperCase() : 'GENERAL';
@@ -844,15 +878,8 @@
     const ipaStr = (morpho && morpho.getInterlinguaIPA) ? morpho.getInterlinguaIPA(wordPlain, item[2]) : '';
     const ipaHtml = ipaStr ? `<span style="display: inline-block; margin-left: 8px; padding: 2px 8px; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 4px; font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent-blue); font-weight: 600;">IPA: ${ipaStr}</span>` : '';
 
-    if (stressInfo) {
-      modalPronunciation.innerHTML = `<strong>Accentuation:</strong> ${stressInfo.ruleDesc} ${ipaHtml}`;
-    } else if (item[2]) {
-      modalPronunciation.innerHTML = `<strong>Accentuation:</strong> Le vocal accentuate es sublineate explicitemente proque devia del regula general. ${ipaHtml}`;
-    } else {
-      modalPronunciation.innerHTML = `<strong>Accentuation:</strong> Regula general de Interlingua (accento sur le vocal ante le ultime consonante). ${ipaHtml}`;
-    }
-
-    modalIEDLink.href = `https://www.interlingua.com/ied/cerca/?parola=${encodeURIComponent(wordPlain)}`;
+    modalPronunciation.innerHTML = getPronunciationHtml(stressInfo, item[2], ipaHtml);
+    modalIEDLink.href = getIEDUrl(wordPlain);
     
     let morphoHtml = '';
     if (pos && pos.includes('vb') && morpho) {
@@ -901,16 +928,16 @@
     modalDefinitions.innerHTML = `<span style="color: var(--text-muted);">Cercante definition in Wiktionary...</span>`;
     
     fetch(`https://en.wiktionary.org/api/rest_v1/page/definition/${encodeURIComponent(wordPlain)}`)
-      .then(r => {
+      .then((r: Response) => {
         if (!r.ok) throw new Error('Not found');
-        return r.json();
+        return r.json() as Promise<{ en?: Array<{ partOfSpeech?: string; definitions?: Array<{ definition?: string }> }> }>;
       })
       .then(res => {
         if (res && res.en && res.en.length) {
           let defHtml = '<ul style="padding-left: 20px; margin: 0;">';
-          res.en.forEach(item => {
+          res.en.forEach((item: { partOfSpeech?: string; definitions?: Array<{ definition?: string }> }) => {
             if (item.definitions) {
-              item.definitions.slice(0, 3).forEach(d => {
+              item.definitions.slice(0, 3).forEach((d: { definition?: string }) => {
                 let cleanDef = d.definition || '';
                 // Fix relative /wiki/ links so they point to en.wiktionary.org and open in new tab
                 cleanDef = cleanDef.replace(/href="\/wiki\/([^"]+)"/g, 'href="https://en.wiktionary.org/wiki/$1" target="_blank" rel="noopener"');
@@ -932,12 +959,14 @@
     modalBackdrop.classList.add('open');
   }
 
-  function closeModal() {
-    modalBackdrop.classList.remove('open');
+  function closeModal(): void {
+    if (modalBackdrop) {
+      modalBackdrop.classList.remove('open');
+    }
     currentModalWord = null;
   }
 
-  function speakWord(text, triggerButton) {
+  function speakWord(text: string, triggerButton: HTMLButtonElement | null): void {
     if (!text) return;
     if (window.GoogleTTS && typeof window.GoogleTTS.speak === 'function') {
       const originalHtml = triggerButton ? triggerButton.innerHTML : null;
@@ -972,27 +1001,29 @@
   // ==========================================
   // TEXT ANALYZER ENGINE & INTERACTIVE READER
   // ==========================================
-  function runTextAnalysis() {
+  function runTextAnalysis(): void {
+    if (!analyzerInputText || !interactiveReaderBody || !analyzerOutputArea || !analyzerStatsBadges) return;
     const rawText = analyzerInputText.value.trim();
     if (!rawText) return;
 
     const tokens = rawText.match(/\d+(?:[.,]\d+)+|[\wÀ-ÿ]+|[^\wÀ-ÿ]+/g) || [];
-    const isWordToken = (tok) => /^(?:\d+(?:[.,]\d+)+|[\wÀ-ÿ]+)$/.test(tok);
+    const isWordToken = (tok: string): boolean => /^(?:\d+(?:[.,]\d+)+|[\wÀ-ÿ]+)$/.test(tok);
     
-    // Pass 1: Extract words with positional context
-    const wordList = [];
+    // Pass 1: Extractor parolas con contexto positional
+    const wordList: Array<{ tokenPos: number; tok: string; low: string }> = [];
     for (let i = 0; i < tokens.length; i++) {
-      if (isWordToken(tokens[i])) {
+      const tokVal = tokens[i];
+      if (tokVal && isWordToken(tokVal)) {
         wordList.push({
           tokenPos: i,
-          tok: tokens[i],
-          low: tokens[i].toLowerCase()
+          tok: tokVal,
+          low: tokVal.toLowerCase()
         });
       }
     }
 
-    // Pass 2: Analyze each word with surrounding context
-    const wordAnalysisMap = [];
+    // Pass 2: Analysar cata parola con contexto circunstanti
+    const wordAnalysisMap: AnalysisResult[] = [];
     let wordCount = wordList.length;
     let recognizedCount = 0;
     let verbCount = 0;
@@ -1003,8 +1034,9 @@
 
     for (let w = 0; w < wordList.length; w++) {
       const item = wordList[w];
-      const prevLow = w > 0 ? wordList[w - 1].low : "";
-      const nextLow = w < wordList.length - 1 ? wordList[w + 1].low : "";
+      if (!item) continue;
+      const prevLow = w > 0 ? (wordList[w - 1]?.low ?? '') : '';
+      const nextLow = w < wordList.length - 1 ? (wordList[w + 1]?.low ?? '') : '';
 
       const analysis = morpho.analyzeTextTokenContextual({
         tok: item.tok,
@@ -1012,6 +1044,8 @@
         prevLow: prevLow,
         nextLow: nextLow
       }, dictMulti, verbMap, adjMap, sbMap, vocabList);
+
+      if (!analysis) continue;
 
       if (analysis.status !== 'unknown') {
         recognizedCount++;
@@ -1029,25 +1063,26 @@
 
     currentAnalyzedTokens = wordAnalysisMap;
 
-    // Pass 3: Build interactive HTML
+    // Pass 3: Construer HTML interactiv
     let readerHtml = '';
     let currentWordIdx = 0;
 
     for (let i = 0; i < tokens.length; i++) {
       const tok = tokens[i];
+      if (!tok) continue;
       if (isWordToken(tok)) {
         const analysis = wordAnalysisMap[currentWordIdx];
         const tokenIdx = currentWordIdx;
         currentWordIdx++;
 
         let pClass = 'token-other';
-        const p = (analysis.pos || '').toLowerCase();
+        const p = analysis ? (analysis.pos || '').toLowerCase() : '';
         if (p.includes('vb')) pClass = 'token-vb';
         else if (p.includes('sb')) pClass = 'token-sb';
         else if (p.includes('adj')) pClass = 'token-adj';
         else if (p.includes('adv')) pClass = 'token-adv';
-        else if (p.includes('num') || analysis.status === 'numeral') pClass = 'token-num';
-        else if (analysis.status === 'unknown') pClass = 'token-unknown';
+        else if (p.includes('num') || (analysis && analysis.status === 'numeral')) pClass = 'token-num';
+        else if (analysis && analysis.status === 'unknown') pClass = 'token-unknown';
 
         readerHtml += `<span class="txt-token ${pClass}" data-token-idx="${tokenIdx}">${tok}</span>`;
       } else {
@@ -1056,8 +1091,8 @@
       }
     }
 
-    // Render Stats Badges
-    const coveragePct = wordCount > 0 ? ((recognizedCount / wordCount) * 100).toFixed(1) : 0;
+    // Renderisar badges de statistica
+    const coveragePct = wordCount > 0 ? ((recognizedCount / wordCount) * 100).toFixed(1) : '0';
     analyzerStatsBadges.innerHTML = `
       <div class="stat-badge">Total parolas: <strong>${wordCount}</strong></div>
       <div class="stat-badge" style="border-color: var(--accent-emerald);">Recognoscentia: <strong style="color: var(--accent-emerald);">${coveragePct}%</strong> (${recognizedCount}/${wordCount})</div>
@@ -1071,27 +1106,28 @@
     interactiveReaderBody.innerHTML = readerHtml;
     analyzerOutputArea.style.display = 'block';
 
-    // Auto-select first token if available
+    // Auto-selectir le prime token si disponibile
     if (currentAnalyzedTokens.length > 0) {
       selectTokenForInspection(0);
     }
   }
 
-  function selectTokenForInspection(tokenIdx) {
+  // Inspector de parolas e analysator
+  function selectTokenForInspection(tokenIdx: number): void {
     const analysis = currentAnalyzedTokens[tokenIdx];
-    if (!analysis) return;
+    if (!analysis || !interactiveReaderBody || !inspectorContent) return;
 
-    // Highlight active token in reader
+    // Sublinear le token active in le lector
     interactiveReaderBody.querySelectorAll('.txt-token').forEach(t => t.classList.remove('active-token'));
     const tokenElem = interactiveReaderBody.querySelector(`.txt-token[data-token-idx="${tokenIdx}"]`);
     if (tokenElem) tokenElem.classList.add('active-token');
 
-    // Build Inspector Panel HTML
-    const word = analysis.word;
-    const root = analysis.root;
+    // Construer HTML del panel inspector
+    const word = analysis.word || '';
+    const root = analysis.root || word;
     const pos = analysis.pos || 'General';
-    const status = analysis.status;
-    const desc = analysis.desc;
+    const status = analysis.status || '';
+    const desc = analysis.desc || '';
     const posClass = getPosClass(pos);
 
     let extraDetails = '';
@@ -1252,191 +1288,239 @@
     `;
 
     inspectorContent.querySelectorAll('.btn-suggestion-chip').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const targetWord = btn.getAttribute('data-suggest-word');
+      btn.addEventListener('click', (e: Event) => {
+        const targetWord = (e.currentTarget as HTMLElement).getAttribute('data-suggest-word') || '';
         const lowT = targetWord.toLowerCase();
-        let matchIdx = dictMap[lowT] ? data.indexOf(dictMap[lowT]) : -1;
+        let matchIdx = dictMap[lowT] ? data.indexOf(dictMap[lowT]!) : -1;
         if (matchIdx >= 0) {
           openWordModal(matchIdx);
         }
       });
     });
 
-    const btnSpeak = document.getElementById('inspector-btn-speak');
-    btnSpeak.addEventListener('click', () => {
-      const toSpeak = analysis.transcription || word;
-      speakWord(toSpeak, btnSpeak);
-    });
-    document.getElementById('inspector-btn-modal').addEventListener('click', () => {
-      // Find index in dictionary data
-      const lowRoot = root.toLowerCase();
-      const lowWord = word.toLowerCase();
-      let matchIdx = dictMap[lowRoot] ? data.indexOf(dictMap[lowRoot]) : (dictMap[lowWord] ? data.indexOf(dictMap[lowWord]) : -1);
-      if (matchIdx >= 0) {
-        openWordModal(matchIdx);
-      } else {
-        // synthesize custom entry
-        currentModalWord = word;
-        let wordHtml = word;
-        let stressInfo = null;
-        if (morpho && morpho.computeIALAStressHTML) {
-          stressInfo = morpho.computeIALAStressHTML(word, '', pos);
-          wordHtml = stressInfo.html;
-          if (stressInfo.isIrregular) {
-            wordHtml = wordHtml.replace('<u>', '<u class="stress-irregular">');
+    const btnSpeak = document.getElementById('inspector-btn-speak') as HTMLButtonElement | null;
+    if (btnSpeak) {
+      btnSpeak.addEventListener('click', () => {
+        const toSpeak = analysis.transcription || word || '';
+        speakWord(toSpeak, btnSpeak);
+      });
+    }
+    const btnModalInspector = document.getElementById('inspector-btn-modal');
+    if (btnModalInspector) {
+      btnModalInspector.addEventListener('click', () => {
+        // Cercar indice in le datos del dictionario
+        const lowRoot = (root || '').toLowerCase();
+        const lowWord = (word || '').toLowerCase();
+        let matchIdx = (lowRoot && dictMap[lowRoot]) ? data.indexOf(dictMap[lowRoot]!) : ((lowWord && dictMap[lowWord]) ? data.indexOf(dictMap[lowWord]!) : -1);
+        if (matchIdx >= 0) {
+          openWordModal(matchIdx);
+        } else {
+          // Synthetisar entrata personalisate
+          currentModalWord = word || null;
+          let wordHtml = word || '';
+          let stressInfo: { html: string; isIrregular: boolean; ruleDesc: string } | null = null;
+          if (morpho && morpho.computeIALAStressHTML) {
+            stressInfo = morpho.computeIALAStressHTML(word || '', '', pos);
+            wordHtml = stressInfo.html;
+            if (stressInfo.isIrregular) {
+              wordHtml = wordHtml.replace('<u>', '<u class="stress-irregular">');
+            }
+          }
+          if (modalWordTitle) modalWordTitle.innerHTML = wordHtml;
+          if (modalPosTag) {
+            modalPosTag.className = `pos-tag ${posClass}`;
+            modalPosTag.textContent = pos.toUpperCase();
+          }
+          if (modalPronunciation) modalPronunciation.innerHTML = getPronunciationHtml(stressInfo);
+          if (modalIEDLink) modalIEDLink.href = getIEDUrl(root || '');
+          if (modalDefinitions) {
+            if (pos.includes('num') || status === 'numeral') {
+              modalDefinitions.innerHTML = `
+                <div class="def-group">
+                  <div class="def-category">Numeral Cardinal</div>
+                  <ol class="def-list">
+                    <li class="def-item">
+                      <div class="def-dutch"><strong>Numeral in Interlingua:</strong> ${analysis.transcription || word}</div>
+                      <div class="def-note">Regula de composition cardinal e decimal secundo le Grammatica de IALA (§47).</div>
+                    </li>
+                  </ol>
+                </div>
+              `;
+            } else {
+              modalDefinitions.innerHTML = `<em>Parola analysate como: ${desc}</em>`;
+            }
+          }
+          if (modalMorphologySection) {
+            modalMorphologySection.style.display = 'none';
+          }
+          if (modalBackdrop) {
+            modalBackdrop.classList.add('open');
           }
         }
-        modalWordTitle.innerHTML = wordHtml;
-        modalPosTag.className = `pos-tag ${posClass}`;
-        modalPosTag.textContent = pos.toUpperCase();
-        modalPronunciation.innerHTML = stressInfo ? `<strong>Accentuation:</strong> ${stressInfo.ruleDesc}` : `<strong>Accentuation:</strong> Regula general de Interlingua.`;
-        modalIEDLink.href = `https://www.interlingua.com/ied/cerca/?parola=${encodeURIComponent(root)}`;
-        if (pos.includes('num') || status === 'numeral') {
-          modalDefinitions.innerHTML = `
-            <div class="def-group">
-              <div class="def-category">Numeral Cardinal</div>
-              <ol class="def-list">
-                <li class="def-item">
-                  <div class="def-dutch"><strong>Numeral in Interlingua:</strong> ${analysis.transcription || word}</div>
-                  <div class="def-note">Regula de composition cardinal e decimal secundo le Grammatica de IALA (§47).</div>
-                </li>
-              </ol>
-            </div>
-          `;
-        } else {
-          modalDefinitions.innerHTML = `<em>Parola analysate como: ${desc}</em>`;
-        }
-        modalMorphologySection.style.display = 'none';
-        modalBackdrop.classList.add('open');
+      });
+    }
+  }
+
+  // Delegate de clic in le lector interactiv
+  if (interactiveReaderBody) {
+    interactiveReaderBody.addEventListener('click', (e: MouseEvent) => {
+      const targetNode = e.target as Element | null;
+      if (!targetNode) return;
+      const tokenSpan = targetNode.closest('.txt-token') as HTMLElement | null;
+      if (!tokenSpan) return;
+      const idxStr = tokenSpan.dataset['tokenIdx'];
+      if (idxStr !== undefined) {
+        const idx = parseInt(idxStr, 10);
+        selectTokenForInspection(idx);
       }
     });
   }
 
-  // Interactive Reader Click Delegation
-  interactiveReaderBody.addEventListener('click', (e) => {
-    const tokenSpan = e.target.closest('.txt-token');
-    if (!tokenSpan) return;
-    const idx = parseInt(tokenSpan.dataset.tokenIdx, 10);
-    selectTokenForInspection(idx);
-  });
+  if (btnAnalyzeRun) btnAnalyzeRun.addEventListener('click', runTextAnalysis);
 
-  btnAnalyzeRun.addEventListener('click', runTextAnalysis);
-
-  btnAnalyzeSample.addEventListener('click', () => {
-    analyzerInputText.value = `Interlingua es un lingua auxiliar international basate sur le vocabulos commun del principal linguas occidental. 
+  if (btnAnalyzeSample && analyzerInputText) {
+    btnAnalyzeSample.addEventListener('click', () => {
+      analyzerInputText.value = `Interlingua es un lingua auxiliar international basate sur le vocabulos commun del principal linguas occidental. 
 Le parolas de interlingua es facilemente comprehensibile pro centenas de milliones de personas sin studio previe. 
 Nos mangiava insimul in le restaurant e nos parlara de nostre planos pro le futuro con grandissime enthusiasmo.`;
-    runTextAnalysis();
-  });
+      runTextAnalysis();
+    });
+  }
 
-  btnAnalyzeClear.addEventListener('click', () => {
-    analyzerInputText.value = '';
-    analyzerOutputArea.style.display = 'none';
-    interactiveReaderBody.innerHTML = '';
-    currentAnalyzedTokens = [];
-    inspectorContent.innerHTML = `
-      <div class="inspector-placeholder">
-        <p>Pulsa qualcunque parola in le texto pro vider su radice, function grammatical, flexiones e definition.</p>
-      </div>
-    `;
-  });
+  if (btnAnalyzeClear && analyzerInputText && analyzerOutputArea && inspectorContent) {
+    btnAnalyzeClear.addEventListener('click', () => {
+      analyzerInputText.value = '';
+      analyzerOutputArea.style.display = 'none';
+      if (interactiveReaderBody) interactiveReaderBody.innerHTML = '';
+      currentAnalyzedTokens = [];
+      inspectorContent.innerHTML = `
+        <div class="inspector-placeholder">
+          <p>Pulsa qualcunque parola in le texto pro vider su radice, function grammatical, flexiones e definition.</p>
+        </div>
+      `;
+    });
+  }
 
-  // Events - Search View
-  searchInput.addEventListener('input', (e) => {
-    searchTerm = e.target.value;
-    clearBtn.style.display = searchTerm ? 'block' : 'none';
-    currentPage = 1;
-    filterData();
-  });
+  // Evenimentos - Vista de Cerca
+  if (searchInput && clearBtn) {
+    searchInput.addEventListener('input', (e: Event) => {
+      searchTerm = (e.target as HTMLInputElement).value;
+      clearBtn.style.display = searchTerm ? 'block' : 'none';
+      currentPage = 1;
+      filterData();
+    });
 
-  clearBtn.addEventListener('click', () => {
-    searchInput.value = '';
-    searchTerm = '';
-    clearBtn.style.display = 'none';
-    currentPage = 1;
-    searchInput.focus();
-    filterData();
-  });
+    clearBtn.addEventListener('click', () => {
+      searchInput.value = '';
+      searchTerm = '';
+      clearBtn.style.display = 'none';
+      currentPage = 1;
+      searchInput.focus();
+      filterData();
+    });
+  }
 
-  wordsGrid.addEventListener('click', (e) => {
-    const card = e.target.closest('.word-card');
-    if (!card) return;
-    const idx = parseInt(card.dataset.index, 10);
-    openWordModal(idx);
-  });
+  if (wordsGrid) {
+    wordsGrid.addEventListener('click', (e: MouseEvent) => {
+      const targetNode = e.target as Element | null;
+      if (!targetNode) return;
+      const card = targetNode.closest('.word-card') as HTMLElement | null;
+      if (!card) return;
+      const idxStr = card.dataset['index'];
+      if (idxStr !== undefined) {
+        const idx = parseInt(idxStr, 10);
+        openWordModal(idx);
+      }
+    });
+  }
 
-  paginationContainer.addEventListener('click', (e) => {
-    const btn = e.target.closest('.page-btn');
-    if (!btn || btn.disabled) return;
-    const p = parseInt(btn.dataset.page, 10);
-    if (p && p !== currentPage) {
-      currentPage = p;
-      renderResults();
-      window.scrollTo({ top: 200, behavior: 'smooth' });
-    }
-  });
+  if (paginationContainer) {
+    paginationContainer.addEventListener('click', (e: MouseEvent) => {
+      const targetNode = e.target as Element | null;
+      if (!targetNode) return;
+      const btn = targetNode.closest('.page-btn') as HTMLButtonElement | null;
+      if (!btn || btn.disabled) return;
+      const pStr = btn.dataset['page'];
+      const p = pStr ? parseInt(pStr, 10) : NaN;
+      if (!isNaN(p) && p !== currentPage) {
+        currentPage = p;
+        renderResults();
+        window.scrollTo({ top: 200, behavior: 'smooth' });
+      }
+    });
+  }
 
-  modalClose.addEventListener('click', closeModal);
-  modalBackdrop.addEventListener('click', (e) => {
-    if (e.target === modalBackdrop) closeModal();
-  });
+  if (modalClose) modalClose.addEventListener('click', closeModal);
+  if (modalBackdrop) {
+    modalBackdrop.addEventListener('click', (e: MouseEvent) => {
+      if (e.target === modalBackdrop) closeModal();
+    });
+  }
 
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modalBackdrop.classList.contains('open')) {
+  document.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key === 'Escape' && modalBackdrop && modalBackdrop.classList.contains('open')) {
       closeModal();
     }
-    if (e.key === '/' && currentView === 'search' && document.activeElement !== searchInput) {
+    if (e.key === '/' && currentView === 'search' && searchInput && document.activeElement !== searchInput) {
       e.preventDefault();
       searchInput.focus();
       searchInput.select();
     }
   });
 
-  modalSpeakBtn.addEventListener('click', () => {
-    if (currentModalWord) speakWord(currentModalWord, modalSpeakBtn);
-  });
+  if (modalSpeakBtn) {
+    modalSpeakBtn.addEventListener('click', () => {
+      if (currentModalWord) speakWord(currentModalWord, modalSpeakBtn);
+    });
+  }
 
-  modalCopyBtn.addEventListener('click', () => {
-    if (currentModalWord) {
-      navigator.clipboard.writeText(currentModalWord).then(() => {
-        const originalText = modalCopyBtn.innerHTML;
-        modalCopyBtn.innerHTML = `✓ Copiate!`;
-        setTimeout(() => { modalCopyBtn.innerHTML = originalText; }, 1500);
-      });
-    }
-  });
+  if (modalCopyBtn) {
+    modalCopyBtn.addEventListener('click', () => {
+      if (currentModalWord && modalCopyBtn) {
+        navigator.clipboard.writeText(currentModalWord).then(() => {
+          if (!modalCopyBtn) return;
+          const originalText = modalCopyBtn.innerHTML;
+          modalCopyBtn.innerHTML = `✓ Copiate!`;
+          setTimeout(() => { if (modalCopyBtn) modalCopyBtn.innerHTML = originalText; }, 1500);
+        });
+      }
+    });
+  }
 
   document.querySelectorAll('.filter-chip-pos').forEach(chip => {
-    chip.addEventListener('click', () => {
+    chip.addEventListener('click', (e: Event) => {
       document.querySelectorAll('.filter-chip-pos').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      activePos = chip.dataset.pos;
+      const targetChip = e.currentTarget as HTMLElement;
+      targetChip.classList.add('active');
+      activePos = targetChip.dataset['pos'] ?? 'ALL';
       currentPage = 1;
       filterData();
     });
   });
 
   document.querySelectorAll('.filter-chip-mode').forEach(chip => {
-    chip.addEventListener('click', () => {
+    chip.addEventListener('click', (e: Event) => {
       document.querySelectorAll('.filter-chip-mode').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      matchMode = chip.dataset.mode;
+      const targetChip = e.currentTarget as HTMLElement;
+      targetChip.classList.add('active');
+      matchMode = targetChip.dataset['mode'] ?? 'prefix';
       currentPage = 1;
       filterData();
     });
   });
 
   document.querySelectorAll('.filter-chip-stress').forEach(chip => {
-    chip.addEventListener('click', () => {
+    chip.addEventListener('click', (e: Event) => {
       document.querySelectorAll('.filter-chip-stress').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      stressFilter = chip.dataset.stress;
+      const targetChip = e.currentTarget as HTMLElement;
+      targetChip.classList.add('active');
+      stressFilter = targetChip.dataset['stress'] ?? 'ALL';
       currentPage = 1;
       filterData();
     });
   });
 
-  function applyTheme(theme) {
+  function applyTheme(theme: string): void {
     const validTheme = theme === 'dark' ? 'dark' : 'light';
     document.body.setAttribute('data-theme', validTheme);
     localStorage.setItem('dictionario-theme', validTheme);
@@ -1450,7 +1534,7 @@ Nos mangiava insimul in le restaurant e nos parlara de nostre planos pro le futu
     }
   }
 
-  function applyStyle(style) {
+  function applyStyle(style: string): void {
     const validStyle = style === 'modern' ? 'modern' : 'w95';
     document.body.setAttribute('data-style', validStyle);
     localStorage.setItem('dictionario-style', validStyle);
@@ -1539,8 +1623,8 @@ Nos mangiava insimul in le restaurant e nos parlara de nostre planos pro le futu
       }
     });
 
-    menuFile.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
+    menuFile.addEventListener('keydown', (e: KeyboardEvent) => {
+      if ((e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') && dropdownFile) {
         e.preventDefault();
         dropdownFile.classList.add('show');
         menuFile.classList.add('active-menu');
@@ -1567,8 +1651,8 @@ Nos mangiava insimul in le restaurant e nos parlara de nostre planos pro le futu
       }
     });
 
-    menuStilo.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
+    menuStilo.addEventListener('keydown', (e: KeyboardEvent) => {
+      if ((e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') && dropdownStilo) {
         e.preventDefault();
         dropdownStilo.classList.add('show');
         menuStilo.classList.add('active-menu');
@@ -1611,14 +1695,14 @@ Nos mangiava insimul in le restaurant e nos parlara de nostre planos pro le futu
   }
 
   if (menuFileAbout) {
-    menuFileAbout.addEventListener('click', (e) => {
+    menuFileAbout.addEventListener('click', (e: MouseEvent) => {
       e.stopPropagation();
       openAboutModal();
     });
   }
 
   if (menuFileAudio) {
-    menuFileAudio.addEventListener('click', (e) => {
+    menuFileAudio.addEventListener('click', (e: MouseEvent) => {
       e.stopPropagation();
       if (dropdownFile) dropdownFile.classList.remove('show');
       if (menuFile) menuFile.classList.remove('active-menu');
@@ -1631,7 +1715,7 @@ Nos mangiava insimul in le restaurant e nos parlara de nostre planos pro le futu
   if (aboutModalClose) aboutModalClose.addEventListener('click', closeAboutModal);
   if (aboutModalOkBtn) aboutModalOkBtn.addEventListener('click', closeAboutModal);
   if (aboutModalBackdrop) {
-    aboutModalBackdrop.addEventListener('click', (e) => {
+    aboutModalBackdrop.addEventListener('click', (e: MouseEvent) => {
       if (e.target === aboutModalBackdrop) closeAboutModal();
     });
   }
@@ -1660,7 +1744,7 @@ Nos mangiava insimul in le restaurant e nos parlara de nostre planos pro le futu
   }
 
   // <u>G</u>rammatica Menu Item -> Detonates download of Grammatica_de_Interlingua.md
-  function downloadGrammatica() {
+  function downloadGrammatica(): void {
     const link = document.createElement('a');
     link.href = 'Grammatica_de_Interlingua.md';
     link.download = 'Grammatica_de_Interlingua.md';
@@ -1676,12 +1760,13 @@ Nos mangiava insimul in le restaurant e nos parlara de nostre planos pro le futu
   }
 
   // Close dropdown on outside click
-  document.addEventListener('click', (e) => {
-    if (dropdownFile && !dropdownFile.contains(e.target) && e.target !== menuFile) {
+  document.addEventListener('click', (e: MouseEvent) => {
+    const targetNode = e.target as Node | null;
+    if (dropdownFile && targetNode && !dropdownFile.contains(targetNode) && targetNode !== menuFile) {
       dropdownFile.classList.remove('show');
       if (menuFile) menuFile.classList.remove('active-menu');
     }
-    if (dropdownStilo && !dropdownStilo.contains(e.target) && e.target !== menuStilo) {
+    if (dropdownStilo && targetNode && !dropdownStilo.contains(targetNode) && targetNode !== menuStilo) {
       dropdownStilo.classList.remove('show');
       if (menuStilo) menuStilo.classList.remove('active-menu');
     }

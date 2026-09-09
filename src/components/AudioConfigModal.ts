@@ -7,8 +7,7 @@
  * regular le velocitate de synthese (speakingRate) e testar le audio in directo.
  */
 
-(function(global) {
-  'use strict';
+'use strict';
 
   function initAudioConfigModal() {
     // Verificar si le modal ja existe in le DOM
@@ -106,7 +105,7 @@
 
     const container = document.createElement('div');
     container.innerHTML = modalHtml;
-    document.body.appendChild(container.firstElementChild);
+    document.body.appendChild(container.firstElementChild as Node);
 
     bindEvents();
   }
@@ -120,10 +119,10 @@
     const rateSlider = document.getElementById('tts-rate-slider');
     const rateValue = document.getElementById('tts-rate-value');
 
-    function closeModal() {
-      backdrop.classList.remove('open');
-      if (global.GoogleTTS && typeof global.GoogleTTS.stop === 'function') {
-        global.GoogleTTS.stop();
+    function closeModal(): void {
+      backdrop?.classList.remove('open');
+      if (window.GoogleTTS && typeof window.GoogleTTS.stop === 'function') {
+        window.GoogleTTS.stop();
       }
     }
 
@@ -137,29 +136,29 @@
 
     if (rateSlider && rateValue) {
       rateSlider.addEventListener('input', function() {
-        rateValue.textContent = parseFloat(rateSlider.value).toFixed(2) + 'x';
+        if (rateValue) rateValue.textContent = parseFloat((rateSlider as HTMLInputElement).value).toFixed(2) + 'x';
       });
     }
 
     if (testBtn) {
       testBtn.addEventListener('click', function() {
-        const checkedVoice = document.querySelector('input[name="tts-voice-radio"]:checked');
+        const checkedVoice = document.querySelector<HTMLInputElement>('input[name="tts-voice-radio"]:checked');
         const voiceId = checkedVoice ? checkedVoice.value : 'it-IT-Neural2-E';
-        const rate = parseFloat(rateSlider.value) || 0.95;
+        const rate = parseFloat((rateSlider as HTMLInputElement | null)?.value ?? '0.95') || 0.95;
 
-        testBtn.disabled = true;
+        (testBtn as HTMLButtonElement).disabled = true;
         testBtn.textContent = '⏳ Sonante...';
 
-        if (global.GoogleTTS && typeof global.GoogleTTS.speak === 'function') {
-          global.GoogleTTS.speak('Benvenite al Dictionario de Interlingua.', {
+        if (window.GoogleTTS && typeof window.GoogleTTS.speak === 'function') {
+          window.GoogleTTS.speak('Benvenite al Dictionario de Interlingua.', {
             voice: voiceId,
             speakingRate: rate,
             onEnd: function() {
-              testBtn.disabled = false;
+              (testBtn as HTMLButtonElement).disabled = false;
               testBtn.textContent = '▶ Proba de Voce';
             },
             onError: function() {
-              testBtn.disabled = false;
+              (testBtn as HTMLButtonElement).disabled = false;
               testBtn.textContent = '▶ Proba de Voce';
             }
           });
@@ -169,13 +168,13 @@
 
     if (saveBtn) {
       saveBtn.addEventListener('click', function() {
-        const checkedVoice = document.querySelector('input[name="tts-voice-radio"]:checked');
+        const checkedVoice = document.querySelector<HTMLInputElement>('input[name="tts-voice-radio"]:checked');
         const voiceId = checkedVoice ? checkedVoice.value : 'it-IT-Neural2-E';
-        const rate = parseFloat(rateSlider.value) || 0.95;
+        const rate = parseFloat((rateSlider as HTMLInputElement | null)?.value ?? '0.95') || 0.95;
 
-        if (global.GoogleTTS) {
-          global.GoogleTTS.setVoice(voiceId);
-          global.GoogleTTS.setSpeakingRate(rate);
+        if (window.GoogleTTS) {
+          window.GoogleTTS.setVoice(voiceId);
+          window.GoogleTTS.setSpeakingRate(rate);
         }
 
         closeModal();
@@ -189,39 +188,37 @@
     if (!backdrop) return;
 
     // Actualisar valores currente
-    if (global.GoogleTTS) {
-      const curVoice = global.GoogleTTS.getVoice();
-      const radio = document.querySelector(`input[name="tts-voice-radio"][value="${curVoice}"]`);
+    if (window.GoogleTTS) {
+      const curVoice = window.GoogleTTS.getVoice();
+      const radio = document.querySelector<HTMLInputElement>(`input[name="tts-voice-radio"][value="${curVoice}"]`);
       if (radio) radio.checked = true;
 
-      const curRate = global.GoogleTTS.getSpeakingRate();
-      const slider = document.getElementById('tts-rate-slider');
+      const curRate = window.GoogleTTS.getSpeakingRate();
+      const slider = document.getElementById('tts-rate-slider') as HTMLInputElement | null;
       const valLabel = document.getElementById('tts-rate-value');
-      if (slider) slider.value = curRate;
+      if (slider) slider.value = String(curRate);
       if (valLabel) valLabel.textContent = curRate.toFixed(2) + 'x';
     }
 
     backdrop.classList.add('open');
   }
 
-  // Exponer API del modulo
-  const AudioConfigModal = {
-    open: openModal,
-    init: initAudioConfigModal
-  };
+// API publica del modulo
+export const AudioConfigModal = {
+  open: openModal,
+  init: initAudioConfigModal
+};
 
-  if (typeof module !== 'undefined' && module.exports) {
-    module.exports = AudioConfigModal;
+// Retrocompatibilitate con scripts global (script tags sin bundler)
+if (typeof window !== 'undefined') {
+  window.AudioConfigModal = AudioConfigModal;
+}
+
+// Auto-init post carga del DOM
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAudioConfigModal);
+  } else {
+    initAudioConfigModal();
   }
-  global.AudioConfigModal = AudioConfigModal;
-
-  // Auto-init post carga del DOM
-  if (typeof document !== 'undefined') {
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initAudioConfigModal);
-    } else {
-      initAudioConfigModal();
-    }
-  }
-
-})(typeof window !== 'undefined' ? window : globalThis);
+}

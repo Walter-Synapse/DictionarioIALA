@@ -1,3 +1,6 @@
+// Motor morphologic de Interlingua (IALA)
+import type { IALAConjugatorAPI, AdjParadigm, NounParadigm, AnalysisResult, CollateralMatch, VerbDeconjugation } from './types/global';
+
 /**
  * Motor Morphologic e Lexicographic Universal pro Interlingua (IALA §§14-115)
  * Deconstruction, derivation, flexion e analyse contextual de parrafos:
@@ -10,7 +13,7 @@
  * 7. Corrector ortographic con distantia de Levenshtein: suggerimentos honestos "¿Quisiste decir...?"
  */
 
-window.IALAConjugator = (function() {
+  const _IALAConjugatorImpl = (function(): IALAConjugatorAPI {
 
   // Conjunto exhaustivo de palabras gramaticales cerradas de Interlingua (IALA §§17-75)
   // Utilizado para evitar clasificar erróneamente palabras al inicio de frase como nombres propios.
@@ -45,27 +48,27 @@ window.IALAConjugator = (function() {
   ]);
 
   /// Átomos numéricos básicos para Interlingua (IALA §47)
-  const numAtomInterlingua = function(n) {
-    const map = {
+  const numAtomInterlingua = function(n: number): string {
+    const map: Record<number, string> = {
       0: 'zero', 1: 'un', 2: 'duo', 3: 'tres', 4: 'quatro', 5: 'cinque',
       6: 'sex', 7: 'septe', 8: 'octo', 9: 'novem', 10: 'dece',
       20: 'vinti', 30: 'trenta', 40: 'quaranta', 50: 'cinquanta',
       60: 'sexanta', 70: 'septanta', 80: 'octanta', 90: 'novanta',
       100: 'cento', 1000: 'mille', 1000000: 'million',
     };
-    return map[n] || '';
+    return map[n] ?? '';
   };
 
   /// Conversión recursiva de enteros a texto en Interlingua (IALA §47)
-  const transcribeIntInterlingua = function(n) {
+  const transcribeIntInterlingua = function(n: number): string {
     if (n === 0) {
       return numAtomInterlingua(0);
     }
 
-    const parts = [];
+    const parts: string[] = [];
 
     // Escalas grandes (Million, Milliardo, Billion, Billiardo, Trillion)
-    const scales = [
+    const scales: [number, string, string][] = [
       [1000000000000000000, 'trillion', 'trilliones'],
       [1000000000000000, 'billiardo', 'billiardos'],
       [1000000000000, 'billion', 'billiones'],
@@ -135,12 +138,12 @@ window.IALAConjugator = (function() {
     return parts.join(' ');
   };
 
-  /// Manejo de números con signo, formatos de miles y decimales para Interlingua (IALA §47)
-  const transcribeNumberFullInterlingua = function(s) {
+  // Manejo de numeros con signo, formatos de milles e decimales pro Interlingua (IALA §47)
+  const transcribeNumberFullInterlingua = function(s: string | number): string | null {
     if (!s) return null;
-    // Recognition of hour tokens like 14h15, 13h45
-    if (/^\d{1,2}h\d{2}$/i.test(s.trim())) {
-      return s.trim();
+    // Recognition de tokens horari como 14h15, 13h45
+    if (/^\d{1,2}h\d{2}$/i.test(String(s).trim())) {
+      return String(s).trim();
     }
     if (typeof s === 'number') {
       s = String(s);
@@ -183,19 +186,16 @@ window.IALAConjugator = (function() {
     const decRe = /^(\d+)[.,](\d+)$/;
     const caps = core.match(decRe);
     if (caps) {
-      const intPart = caps[1];
-      const fracPart = caps[2];
-
-      const intVal = parseInt(intPart, 10);
+      const intVal = parseInt(caps[1]!, 10);
       let out = transcribeIntInterlingua(intVal);
       out += ' comma';
 
-      // Lectura de decimales: agrupados si <= 2 dígitos, dígito a dígito si > 2
-      if (fracPart.length <= 2) {
-        const fracVal = parseInt(fracPart, 10);
+      // Lectura de decimales: agrupados si <= 2 digitos, digito a digito si > 2
+      if (caps[2]!.length <= 2) {
+        const fracVal = parseInt(caps[2]!, 10);
         out += ' ' + transcribeIntInterlingua(fracVal);
       } else {
-        for (const ch of fracPart) {
+        for (const ch of caps[2]!) {
           const d = parseInt(ch, 10);
           out += ' ' + numAtomInterlingua(d);
         }
@@ -271,7 +271,7 @@ window.IALAConjugator = (function() {
   /**
    * Genera el paradigma completo de conjugacion de un verbo en Interlingua (§§94-115)
    */
-  function conjugateInterlingua(infinitive) {
+  function conjugateInterlingua(infinitive: string): unknown {
     const inf = (infinitive || '').toLowerCase().trim();
     if (!inf.endsWith('ar') && !inf.endsWith('er') && !inf.endsWith('ir')) {
       return null;
@@ -296,16 +296,16 @@ window.IALAConjugator = (function() {
 
     let pres, past, fut, cond, imp, part_pres, part_pass;
 
-    if (irregs[inf]) {
-      const irr = irregs[inf];
-      pres = irr.present;
-      past = irr.past;
-      fut = irr.future;
-      cond = irr.conditional;
-      imp = irr.imperative;
-      part_pres = irr.part_pres;
-      part_pass = irr.part_pass;
-    } else {
+      const irr = irregs[inf as keyof typeof irregs];
+      if (irr) {
+        pres = irr.present;
+        past = irr.past;
+        fut = irr.future;
+        cond = irr.conditional;
+        imp = irr.imperative;
+        part_pres = irr.part_pres;
+        part_pass = irr.part_pass;
+      } else {
       pres = inf.slice(0, -1);
       past = stem + vowel + 'va';
       fut = inf + 'a';
@@ -355,7 +355,7 @@ window.IALAConjugator = (function() {
   /**
    * Genera el paradigma completo y formas derivadas de un Adjetivo (§§31-47)
    */
-  function inflectAdjective(adjective) {
+  function inflectAdjective(adjective: string): unknown {
     const a = (adjective || '').toLowerCase().trim();
     if (!a) return null;
 
@@ -432,14 +432,14 @@ window.IALAConjugator = (function() {
       substantiveF: fem,
       isInvariantSubstantive: isInvariant,
       substantivationNote: substantivationNote,
-      irregular: irregs[a] || null
+      irregular: (irregs as Record<string, unknown>)[a] ?? null
     };
   }
 
   /**
    * Genera el plural de un sustantivo segun IALA §§21-25
    */
-  function pluralizeNoun(noun) {
+  function pluralizeNoun(noun: string): unknown {
     const n = (noun || '').toLowerCase().trim();
     if (!n) return null;
 
@@ -476,13 +476,13 @@ window.IALAConjugator = (function() {
    * 4. Regula general: vocal ante le ultime consonante (p.ex. abandono, abandonar, casa, actor).
    * 5. Parolas sin consonante o sin vocal ante le ultime consonante: prime vocal (§10: ío, vía, créa).
    */
-  function computeIALAStressSingleToken(w) {
+  function computeIALAStressSingleToken(w: string): { html: string; isIrregular: boolean; ruleDesc: string } {
     if (!w) return { html: '', isIrregular: false, ruleDesc: '' };
 
     // Localizar indices de vocales (a, e, i, o, u, y)
-    const vowels = [];
+    const vowels: number[] = [];
     for (let i = 0; i < w.length; i++) {
-      if (/[aeiouyáéíóúàèìòù]/i.test(w[i])) {
+      if (/[aeiouyáéíóúàèìòù]/i.test(w[i]!)) {
         vowels.push(i);
       }
     }
@@ -498,7 +498,7 @@ window.IALAConjugator = (function() {
     // Regula IALA §10: Adjectivos e substantivos in -le, -ne, -re precedite per vocal:
     // accento super le tertie syllaba ab le fin (frágile, órdine, témpore).
     if (/(?:[aeiouy](?:le|ne|re))$/i.test(w) && vowels.length >= 3) {
-      const idx = vowels[vowels.length - 3];
+      const idx = vowels[vowels.length - 3]!;
       return {
         html: w.slice(0, idx) + '<u class="stress-irregular">' + w[idx] + '</u>' + w.slice(idx + 1),
         isIrregular: true,
@@ -513,8 +513,8 @@ window.IALAConjugator = (function() {
       const suffStart = suffMatch.index;
       let prevVowelIdx = -1;
       for (let i = vowels.length - 1; i >= 0; i--) {
-        if (vowels[i] < suffStart) {
-          prevVowelIdx = vowels[i];
+        if (vowels[i]! < suffStart) {
+          prevVowelIdx = vowels[i]!;
           break;
         }
       }
@@ -530,14 +530,14 @@ window.IALAConjugator = (function() {
     // Regula standard IALA §10: Vocal ante le ultime consonante
     let lastConsIdx = -1;
     for (let i = w.length - 1; i >= 0; i--) {
-      if (/[bcdfghjklmnpqrstvwxz]/i.test(w[i])) {
+      if (/[bcdfghjklmnpqrstvwxz]/i.test(w[i]!)) {
         lastConsIdx = i;
         break;
       }
     }
 
     if (lastConsIdx === -1) {
-      const idx = vowels[0];
+      const idx = vowels[0]!;
       return {
         html: w.slice(0, idx) + '<u>' + w[idx] + '</u>' + w.slice(idx + 1),
         isIrregular: false,
@@ -547,14 +547,14 @@ window.IALAConjugator = (function() {
 
     let targetVowelIdx = -1;
     for (let i = lastConsIdx - 1; i >= 0; i--) {
-      if (/[aeiouyáéíóúàèìòù]/i.test(w[i])) {
+      if (/[aeiouyáéíóúàèìòù]/i.test(w[i]!)) {
         targetVowelIdx = i;
         break;
       }
     }
 
     if (targetVowelIdx === -1) {
-      targetVowelIdx = vowels[0];
+      targetVowelIdx = vowels[0]!;
     }
 
     return {
@@ -564,7 +564,7 @@ window.IALAConjugator = (function() {
     };
   }
 
-  function computeIALAStressHTML(word, overrideHtml, pos) {
+  function computeIALAStressHTML(word: string, overrideHtml: string, _pos?: string): { html: string; isIrregular: boolean; ruleDesc: string } {
     if (overrideHtml && overrideHtml.includes('<u>')) {
       return {
         html: overrideHtml,
@@ -595,7 +595,7 @@ window.IALAConjugator = (function() {
     if (cleaned.includes(' ')) {
       const parts = cleaned.split(/(\s+)/);
       let anyIrreg = false;
-      const htmlParts = parts.map(part => {
+      const htmlParts = parts.map((part: string) => {
         if (/^\s+$/.test(part)) return part;
         const res = computeIALAStressSingleToken(part);
         if (res.isIrregular) anyIrreg = true;
@@ -623,7 +623,7 @@ window.IALAConjugator = (function() {
    * Transcriptor Fonetic Universal IPA (Migrado directamente de Synapse interlinguaTranscriber.ts)
    * Implementa las 14 reglas fonéticas canónicas de la UMI e IALA con silabación y acentuación IPA /.../
    */
-  function transcribeWordInterlinguaIPA(word, explicitHtml = '') {
+  function transcribeWordInterlinguaIPA(word: string, explicitHtml = ''): string {
     const lowerWord = (word || '').toLowerCase().trim();
     if (lowerWord === 'abc') {
       return "a.be.'tse";
@@ -641,7 +641,7 @@ window.IALAConjugator = (function() {
       }
     }
 
-    const isVowel = (c) => 'aeiouy'.includes(c);
+    const isVowel = (c: string): boolean => 'aeiouy'.includes(c);
     const vowelIndices = chars
       .map((c, idx) => isVowel(c) ? idx : -1)
       .filter((idx) => idx !== -1);
@@ -658,18 +658,18 @@ window.IALAConjugator = (function() {
     let stressedCharIdx = explicitStressIdx;
 
     if (stressedCharIdx === -1) {
-      const lastCharBase = chars[effectiveLen - 1];
+      const lastCharBase = chars[effectiveLen - 1]!;
       const endsInVowel = isVowel(lastCharBase);
       const numVowels = baseVowelIndices.length;
 
       if (endsInVowel) {
         if (numVowels >= 2) {
-          stressedCharIdx = baseVowelIndices[numVowels - 2];
+          stressedCharIdx = baseVowelIndices[numVowels - 2]!;
         } else {
-          stressedCharIdx = baseVowelIndices[0];
+          stressedCharIdx = baseVowelIndices[0]!;
         }
       } else {
-        stressedCharIdx = baseVowelIndices[numVowels - 1];
+        stressedCharIdx = baseVowelIndices[numVowels - 1]!;
       }
 
       const baseWord = chars.slice(0, effectiveLen).join('');
@@ -677,11 +677,11 @@ window.IALAConjugator = (function() {
       if (numVowels >= 3) {
         if (baseWord.endsWith('le') || baseWord.endsWith('ne') || baseWord.endsWith('re')) {
           const suffixLen = 2;
-          if (effectiveLen > suffixLen && isVowel(chars[effectiveLen - suffixLen - 1])) {
-            stressedCharIdx = baseVowelIndices[numVowels - 3];
+          if (effectiveLen > suffixLen && isVowel(chars[effectiveLen - suffixLen - 1]!)) {
+            stressedCharIdx = baseVowelIndices[numVowels - 3]!;
           }
         } else if (baseWord.endsWith('ic')) {
-          stressedCharIdx = baseVowelIndices[numVowels - 2];
+          stressedCharIdx = baseVowelIndices[numVowels - 2]!;
         } else if (baseWord.endsWith('ica') || baseWord.endsWith('ico')
           || baseWord.endsWith('ide') || baseWord.endsWith('ido')
           || baseWord.endsWith('ula') || baseWord.endsWith('ulo')) {
@@ -689,12 +689,12 @@ window.IALAConjugator = (function() {
             'formica', 'amica', 'amico', 'apico', 'pudica', 'pudico', 'antica', 'antico', 'unica', 'unico'
           ];
           if (!nonDerivedIcaIco.includes(baseWord)) {
-            stressedCharIdx = baseVowelIndices[numVowels - 3];
+            stressedCharIdx = baseVowelIndices[numVowels - 3]!;
           }
         } else if (baseWord.endsWith('ific') || baseWord.endsWith('ifico')) {
-          stressedCharIdx = baseVowelIndices[numVowels - 3];
+          stressedCharIdx = baseVowelIndices[numVowels - 3]!;
         } else if (baseWord.endsWith('issime') || ['optime', 'maxime', 'pessime', 'ultime'].includes(baseWord)) {
-          stressedCharIdx = baseVowelIndices[numVowels - 3];
+          stressedCharIdx = baseVowelIndices[numVowels - 3]!;
         }
       }
 
@@ -708,20 +708,20 @@ window.IALAConjugator = (function() {
         ];
         const isTonicHiatus = tonicHiatusEndings.some((s) => baseWord.endsWith(s));
         if (!isTonicHiatus) {
-          stressedCharIdx = baseVowelIndices[numVowels - 3];
+          stressedCharIdx = baseVowelIndices[numVowels - 3]!;
         }
       }
     }
 
-    const ipaParts = [];
+    const ipaParts: [string, boolean][] = [];
     let charIdx = 0;
     let stressedIpaIndex = 0;
 
     while (charIdx < chars.length) {
-      const char = chars[charIdx];
-      const next = chars[charIdx + 1] || null;
-      const afterNext = chars[charIdx + 2] || null;
-      const prev = charIdx > 0 ? chars[charIdx - 1] : null;
+      const char = chars[charIdx]!;
+      const next = chars[charIdx + 1] ?? null;
+      const afterNext = chars[charIdx + 2] ?? null;
+      const prev = charIdx > 0 ? chars[charIdx - 1]! : null;
 
       const isStressed = charIdx === stressedCharIdx;
       if (isStressed) {
@@ -822,9 +822,9 @@ window.IALAConjugator = (function() {
       charIdx++;
     }
 
-    const nucleiIndices = [];
+    const nucleiIndices: number[] = [];
     for (let idx = 0; idx < ipaParts.length; idx++) {
-      if (ipaParts[idx][1]) nucleiIndices.push(idx);
+      if (ipaParts[idx]![1]) nucleiIndices.push(idx);
     }
     const numSyllables = nucleiIndices.length;
     let stressedNucleusIdx = nucleiIndices.findIndex((idx) => idx === stressedIpaIndex);
@@ -833,8 +833,8 @@ window.IALAConjugator = (function() {
       if (numSyllables === 0) {
         stressedNucleusIdx = 0;
       } else {
-        const lastPhoneme = ipaParts[ipaParts.length - 1][0];
-        const endsInVowelPhonetic = 'aeiou'.includes(lastPhoneme[lastPhoneme.length - 1] || '');
+        const lastPhoneme = (ipaParts[ipaParts.length - 1])?.[0] ?? '';
+        const endsInVowelPhonetic = 'aeiou'.includes(lastPhoneme[lastPhoneme.length - 1] ?? '');
         stressedNucleusIdx = endsInVowelPhonetic ? (numSyllables >= 2 ? numSyllables - 2 : 0) : (numSyllables - 1);
       }
     }
@@ -843,20 +843,20 @@ window.IALAConjugator = (function() {
     let lastNucleusEnd = 0;
 
     for (let i = 0; i < nucleiIndices.length; i++) {
-      const nucleusIdx = nucleiIndices[i];
+      const nucleusIdx = nucleiIndices[i]!;
       const consonantsSlice = ipaParts.slice(lastNucleusEnd, nucleusIdx);
       let splitPoint = 0;
 
       if (i > 0) {
         if (consonantsSlice.length > 1) {
           let effectiveLen = consonantsSlice.length;
-          const lastCharStr = consonantsSlice[effectiveLen - 1][0];
+          const lastCharStr = consonantsSlice[effectiveLen - 1]![0];
           if (lastCharStr === 'j' || lastCharStr === 'w') {
             effectiveLen = Math.max(0, effectiveLen - 1);
           }
           if (effectiveLen > 1) {
-            const penultC = consonantsSlice[effectiveLen - 2][0];
-            const lastC = consonantsSlice[effectiveLen - 1][0];
+            const penultC = consonantsSlice[effectiveLen - 2]![0];
+            const lastC = consonantsSlice[effectiveLen - 1]![0];
             const isStop = 'pbtdkɡfv'.includes(penultC);
             const isLiquid = 'lr'.includes(lastC);
             splitPoint = (isStop && isLiquid) ? effectiveLen - 2 : effectiveLen - 1;
@@ -864,21 +864,21 @@ window.IALAConjugator = (function() {
         }
       }
 
-      for (let k = 0; k < splitPoint; k++) result += consonantsSlice[k][0];
+      for (let k = 0; k < splitPoint; k++) result += consonantsSlice[k]![0];
       if (i > 0) result += '.';
       if (i === stressedNucleusIdx && numSyllables > 1) result += 'ˈ';
-      for (let k = splitPoint; k < consonantsSlice.length; k++) result += consonantsSlice[k][0];
-      result += ipaParts[nucleusIdx][0];
+      for (let k = splitPoint; k < consonantsSlice.length; k++) result += consonantsSlice[k]![0];
+      result += ipaParts[nucleusIdx]![0];
       lastNucleusEnd = nucleusIdx + 1;
     }
 
     for (let k = lastNucleusEnd; k < ipaParts.length; k++) {
-      result += ipaParts[k][0];
+      result += ipaParts[k]![0];
     }
     return result;
   }
 
-  function getInterlinguaIPA(text, overrideHtml = '') {
+  function getInterlinguaIPA(text: string, overrideHtml = ''): string {
     const cleaned = (text || '').replace(/\s+(sb|adj|vb|adv|prep|conj|npr)$/i, '').trim();
     if (!cleaned) return '';
 
@@ -886,22 +886,22 @@ window.IALAConjugator = (function() {
     const numTrans = transcribeNumberFullInterlingua(cleaned);
     if (numTrans) {
       const numWords = numTrans.replace(/-/g, ' ').split(/\s+/);
-      const trans = numWords.map(w => transcribeWordInterlinguaIPA(w)).join(' ');
+      const trans = numWords.map((w: string) => transcribeWordInterlinguaIPA(w)).join(' ');
       return '/' + trans + '/';
     }
 
     const words = cleaned.split(/\s+/);
     if (words.length === 1) {
-      return '/' + transcribeWordInterlinguaIPA(words[0], overrideHtml) + '/';
+      return '/' + transcribeWordInterlinguaIPA(words[0]!, overrideHtml) + '/';
     }
-    const trans = words.map(w => transcribeWordInterlinguaIPA(w)).join(' ');
+    const trans = words.map((w: string) => transcribeWordInterlinguaIPA(w)).join(' ');
     return '/' + trans + '/';
   }
 
   /**
    * Distancia de Levenshtein optimizada en memoria O(N)
    */
-  function levenshteinDistance(s1, s2) {
+  function levenshteinDistance(s1: string, s2: string): number {
     if (s1 === s2) return 0;
     const m = s1.length;
     const n = s2.length;
@@ -931,14 +931,14 @@ window.IALAConjugator = (function() {
    * Motor de Sugerencias Ortograficas "¿Quisiste decir...?"
    * Busca en el vocabulario completo por distancia de edicion <= 2
    */
-  function findSpellingSuggestions(word, vocabList, maxDistance = 2, maxResults = 3) {
+  function findSpellingSuggestions(word: string, vocabList: string[], maxDistance = 2, maxResults = 3): Array<{ word: string; distance: number }> {
     const q = (word || '').toLowerCase();
     const qLen = q.length;
     if (qLen < 3 || !vocabList) return [];
 
     const matches = [];
     for (let i = 0; i < vocabList.length; i++) {
-      const cand = vocabList[i];
+      const cand = vocabList[i]!;
       const cLen = cand.length;
       if (Math.abs(cLen - qLen) > maxDistance) continue;
       // Heuristica de velocidad: primera o ultima letra coincidente
@@ -950,7 +950,7 @@ window.IALAConjugator = (function() {
       }
     }
 
-    function commonPrefixLen(a, b) {
+    function commonPrefixLen(a: string, b: string): number {
       let i = 0;
       while (i < a.length && i < b.length && a[i] === b[i]) i++;
       return i;
@@ -978,14 +978,14 @@ window.IALAConjugator = (function() {
    * (h) Omission de -e final post -t precedite de vocal (animat -> animate, brevitat -> brevitate)
    *     e post -n, -l, -r pro -nn, -ll, -rr (peren -> perenne, bel -> belle, il -> ille)
    */
-  function resolveCollateralOrthography(word, dictMap) {
+  function resolveCollateralOrthography(word: string, dictMap: Record<string, unknown>): CollateralMatch[] {
     const w = (word || '').toLowerCase().trim();
     if (w.length < 2 || !dictMap) return [];
 
-    const results = [];
+    const results: unknown[] = [];
     const visited = new Set([w]);
 
-    function tryCand(cand, ruleId, desc) {
+    function tryCand(cand: string, ruleId: string, desc: string): void {
       if (!cand || visited.has(cand)) return;
       visited.add(cand);
       if (dictMap[cand]) {
@@ -1084,13 +1084,13 @@ window.IALAConjugator = (function() {
       }
     }
 
-    return results;
+    return results as CollateralMatch[];
   }
 
   /**
    * Deconstruye cualquier termino ingresado en el buscador
    */
-  function deconstructUniversal(query, dictData, verbMap, adjMap, sbMap) {
+  function deconstructUniversal(query: string, dictData: unknown, verbMap: Record<string, number>, adjMap: Record<string, number>, sbMap: Record<string, number>): AnalysisResult | null {
     const q = (query || '').toLowerCase().trim();
     if (!q) return null;
 
@@ -1109,27 +1109,27 @@ window.IALAConjugator = (function() {
 
     // 1. Verbos conjugate in Interlingua (§§94-115)
     const iaVerbMatches = deconjugateInterlingua(q, verbMap);
-    if (iaVerbMatches && iaVerbMatches.length > 0) {
-      return { category: 'ia_verb', data: iaVerbMatches[0] };
+    if (iaVerbMatches && Array.isArray(iaVerbMatches) && iaVerbMatches.length > 0) {
+      return { category: 'ia_verb', data: iaVerbMatches[0] as unknown as VerbDeconjugation };
     }
 
     if (q.endsWith('amente')) {
       const candC = q.slice(0, -6);
       if (adjMap && adjMap[candC] !== undefined) {
-        return { category: 'adverb_mente', sourceWord: q, baseAdjective: candC, paradigm: inflectAdjective(candC), formula: `${candC} + -amente (§45)` };
+        return { category: 'adverb_mente', sourceWord: q, baseAdjective: candC, paradigm: inflectAdjective(candC) as AdjParadigm, formula: `${candC} + -amente (§45)` };
       }
     }
     if (q.endsWith('mente')) {
       const candBase = q.slice(0, -5);
       if (adjMap && adjMap[candBase] !== undefined) {
-        return { category: 'adverb_mente', sourceWord: q, baseAdjective: candBase, paradigm: inflectAdjective(candBase), formula: `${candBase} + -mente (§45)` };
+        return { category: 'adverb_mente', sourceWord: q, baseAdjective: candBase, paradigm: inflectAdjective(candBase) as AdjParadigm, formula: `${candBase} + -mente (§45)` };
       }
     }
 
     if (q.endsWith('hissime')) {
       const candC = q.slice(0, -7) + 'c';
       if (adjMap && adjMap[candC] !== undefined) {
-        return { category: 'ia_superlative', sourceWord: q, baseAdjective: candC, paradigm: inflectAdjective(candC), formula: `${candC} → -ch- + -issime (§36)` };
+        return { category: 'ia_superlative', sourceWord: q, baseAdjective: candC, paradigm: inflectAdjective(candC) as AdjParadigm, formula: `${candC} → -ch- + -issime (§36)` };
       }
     }
     if (q.endsWith('issime')) {
@@ -1137,38 +1137,38 @@ window.IALAConjugator = (function() {
       const candE = stem + 'e';
       const found = (adjMap && adjMap[stem] !== undefined) ? stem : ((adjMap && adjMap[candE] !== undefined) ? candE : stem);
       if (adjMap && (adjMap[stem] !== undefined || adjMap[candE] !== undefined)) {
-        return { category: 'ia_superlative', sourceWord: q, baseAdjective: found, paradigm: inflectAdjective(found), formula: `${found} + -issime (§36)` };
+        return { category: 'ia_superlative', sourceWord: q, baseAdjective: found, paradigm: inflectAdjective(found) as AdjParadigm, formula: `${found} + -issime (§36)` };
       }
     }
 
     if (q.endsWith('hes') && q.length > 3) {
       const sing = q.slice(0, -3);
       if (sbMap && sbMap[sing] !== undefined) {
-        return { category: 'ia_plural', sourceWord: q, singular: sing, rule: "Plural regular de nomine finiente in -c (-c → -ches) (§21)", nounData: pluralizeNoun(sing) };
+        return { category: 'ia_plural', sourceWord: q, singular: sing, rule: "Plural regular de nomine finiente in -c (-c → -ches) (§21)", nounData: pluralizeNoun(sing) as NounParadigm };
       }
     }
     if (q.endsWith('eses') || q.endsWith('ites')) {
       const sing = q.slice(0, -2) + 'is';
       if (sbMap && sbMap[sing] !== undefined) {
-        return { category: 'ia_plural', sourceWord: q, singular: sing, rule: "Plural de vocabulos docte in -is (-is → -es) (§22)", nounData: pluralizeNoun(sing) };
+        return { category: 'ia_plural', sourceWord: q, singular: sing, rule: "Plural de vocabulos docte in -is (-is → -es) (§22)", nounData: pluralizeNoun(sing) as NounParadigm };
       }
     }
     if (q.endsWith('es') && q.length > 3) {
       const sing = q.slice(0, -2);
       if (sbMap && sbMap[sing] !== undefined) {
-        return { category: 'ia_plural', sourceWord: q, singular: sing, rule: "Plural post consonante con desinentia -es (§21)", nounData: pluralizeNoun(sing) };
+        return { category: 'ia_plural', sourceWord: q, singular: sing, rule: "Plural post consonante con desinentia -es (§21)", nounData: pluralizeNoun(sing) as NounParadigm };
       }
     }
     if (q.endsWith('s') && q.length > 2) {
       const sing = q.slice(0, -1);
       if (sbMap && sbMap[sing] !== undefined) {
-        return { category: 'ia_plural', sourceWord: q, singular: sing, rule: "Plural post vocal con desinentia -s (§21)", nounData: pluralizeNoun(sing) };
+        return { category: 'ia_plural', sourceWord: q, singular: sing, rule: "Plural post vocal con desinentia -s (§21)", nounData: pluralizeNoun(sing) as NounParadigm };
       }
     }
 
-    // 5. Orthographia Collateral (IALA §15)
-    // Permite buscar formas simplificate (fonetic, emfatic, tirano, cristo, retoric, sajo, coraje, animat, etc.)
-    const collateralMatches = resolveCollateralOrthography(q, dictData);
+    // Orthographia collateral (IALA §15)
+    // Permitte cercar formas simplificate (fonetic, emfatic, etc.)
+    const collateralMatches = resolveCollateralOrthography(q, dictData as unknown as Record<string, unknown>);
     if (collateralMatches && collateralMatches.length > 0) {
       return { category: 'ia_collateral', sourceWord: q, matches: collateralMatches };
     }
@@ -1198,9 +1198,9 @@ window.IALAConjugator = (function() {
   /**
    * Deconstruye una palabra ya conjugada en Interlingua (Verbos)
    */
-  function deconjugateInterlingua(word, verbMap) {
+  function deconjugateInterlingua(word: string, verbMap: Record<string, number>): unknown {
     const w = (word || '').toLowerCase().trim();
-    const results = [];
+    const results: unknown[] = [];
 
     const irregLookup = {
       'es': { inf: 'esser', tense: 'Presente Simple', formula: 'forma simplificate de esser (§101)' },
@@ -1223,8 +1223,8 @@ window.IALAConjugator = (function() {
       'vaderea': { inf: 'vader', tense: 'Conditional', formula: 'vader + -ea (§107)' }
     };
 
-    if (irregLookup[w]) {
-      const item = irregLookup[w];
+    if ((irregLookup as Record<string, unknown>)[w]) {
+      const item = (irregLookup as Record<string, { inf: string; tense: string; formula: string }>)[w]!;
       results.push({
         sourceLanguage: 'Interlingua', sourceWord: w, infinitive: item.inf,
         tense: item.tense, formula: item.formula, paradigm: conjugateInterlingua(item.inf)
@@ -1233,8 +1233,8 @@ window.IALAConjugator = (function() {
     }
 
     // Participios passatos collaterales (extraite -> extraher, extracte, etc.)
-    if (COLLATERAL_PARTICIPLES[w]) {
-      const item = COLLATERAL_PARTICIPLES[w];
+    if ((COLLATERAL_PARTICIPLES as Record<string, unknown>)[w]) {
+      const item = (COLLATERAL_PARTICIPLES as Record<string, { inf: string; desc: string }>)[w]!;
       results.push({
         sourceLanguage: 'Interlingua', sourceWord: w, infinitive: item.inf,
         tense: 'Participio Passate (Collateral)', formula: item.desc, paradigm: conjugateInterlingua(item.inf)
@@ -1407,7 +1407,7 @@ window.IALAConjugator = (function() {
    * - Desambiguacion sintactica pura por reglas generales de la lengua
    * - Si una palabra no existe, activa la deteccion de errores y calcula sugerencias por distancia de Levenshtein
    */
-  function analyzeTextTokenContextual(tokenInfo, dictMulti, verbMap, adjMap, sbMap, vocabList) {
+  function analyzeTextTokenContextual(tokenInfo: { tok: string; low: string; prevLow?: string; nextLow?: string }, dictMulti: Record<string, unknown[]>, verbMap: Record<string, number>, adjMap: Record<string, number>, sbMap: Record<string, number>, vocabList: string[]): unknown {
     const orig = tokenInfo.tok;
     const low = tokenInfo.low;
     const prevLow = tokenInfo.prevLow || "";
@@ -1428,8 +1428,8 @@ window.IALAConjugator = (function() {
     }
 
     // 1. Contractiones obligatori de preposiciones con articulo (IALA §17)
-    if (GRAMMAR_PARTICLES[low]) {
-      const part = GRAMMAR_PARTICLES[low];
+    if ((GRAMMAR_PARTICLES as Record<string, unknown>)[low]) {
+      const part = (GRAMMAR_PARTICLES as Record<string, { root: string; pos: string; desc: string }>)[low]!;
       return {
         word: orig, root: part.root, pos: part.pos, status: 'grammatic',
         desc: part.desc, dictEntry: [orig, part.pos, '']
@@ -1443,8 +1443,8 @@ window.IALAConjugator = (function() {
       'es': { inf: 'esser', desc: 'Tempore presente del verbo copulativo "esser" (IALA §100)', tense: 'Presente Indicativo' },
       'son': { inf: 'esser', desc: 'Forma collateral plural de presente de "esser" (IALA §100)', tense: 'Presente Indicativo (Plural)' }
     };
-    if (IALA_IRREGULAR_PRESENTS[low]) {
-      const irp = IALA_IRREGULAR_PRESENTS[low];
+    if ((IALA_IRREGULAR_PRESENTS as Record<string, unknown>)[low]) {
+      const irp = (IALA_IRREGULAR_PRESENTS as Record<string, { inf: string; desc: string; tense: string }>)[low]!;
       return {
         word: orig, root: irp.inf, pos: 'vb', status: 'inflected',
         desc: irp.desc, tense: irp.tense, dictEntry: [irp.inf, 'vb', '']
@@ -1455,7 +1455,6 @@ window.IALAConjugator = (function() {
     if (low.endsWith('amente') && low.length > 6) {
       const candC = low.slice(0, -6);
       if (adjMap && adjMap[candC] !== undefined) {
-        const baseAdj = dictMulti[candC] ? dictMulti[candC][0] : [candC, 'adj', ''];
         return {
           word: orig, root: candC, pos: 'adv', status: 'derived',
           desc: `Adverbio regular derivate in -amente de "${candC}" (IALA §45)`,
@@ -1483,8 +1482,8 @@ window.IALAConjugator = (function() {
     }
 
     // 1.b Participios passatos collaterales o classicos (extraite -> extraher, extracte, scripte, etc.)
-    if (COLLATERAL_PARTICIPLES[low]) {
-      const cp = COLLATERAL_PARTICIPLES[low];
+    if ((COLLATERAL_PARTICIPLES as Record<string, unknown>)[low]) {
+      const cp = (COLLATERAL_PARTICIPLES as Record<string, { inf: string; desc: string }>)[low]!;
       return {
         word: orig,
         root: cp.inf,
@@ -1511,8 +1510,8 @@ window.IALAConjugator = (function() {
     }
     if (low.endsWith('s') && low.length > 3) {
       const sing = low.slice(0, -1);
-      if (COLLATERAL_PARTICIPLES[sing]) {
-        const cp = COLLATERAL_PARTICIPLES[sing];
+      if ((COLLATERAL_PARTICIPLES as Record<string, unknown>)[sing]) {
+        const cp = (COLLATERAL_PARTICIPLES as Record<string, { inf: string; desc: string }>)[sing]!;
         return {
           word: orig,
           root: cp.inf,
@@ -1537,9 +1536,10 @@ window.IALAConjugator = (function() {
     // 3. Regla Sintactica de Grado Comparative o Superlativo (IALA §34)
     // Si la palabra admite funcion adverbial (como 'plus') y precede a un adjetivo o sigue a 'le' / 'un'
     if (dictMulti[low]) {
-      const hasAdv = dictMulti[low].some(e => (e[1] || '').includes('adv'));
+      const hasAdv = (dictMulti[low] as string[][]).some((e: string[]) => (e[1] ?? '').includes('adv'));
       if (hasAdv && (adjMap[nextLow] !== undefined || ['le', 'un', 'del', 'al'].includes(prevLow))) {
-        const advEntry = dictMulti[low].find(e => (e[1] || '').includes('adv'));
+        const advEntry = (dictMulti[low] as string[][]).find((e: string[]) => (e[1] ?? '').includes('adv'));
+        if (!advEntry) return null;
         return {
           word: orig, root: advEntry[0], pos: 'adv', status: 'exact',
           desc: 'Adverbio modificante o de grado (§34, §44)',
@@ -1552,9 +1552,10 @@ window.IALAConjugator = (function() {
     // En Interlingua la posicion normal del adjetivo es pospuesta al sustantivo que califica.
     // Si la palabra tiene entrada como adjetivo y sigue a un sustantivo, actua como adjetivo.
     if (dictMulti[low]) {
-      const hasAdj = dictMulti[low].some(e => (e[1] || '').includes('adj'));
+      const hasAdj = (dictMulti[low] as string[][]).some((e: string[]) => (e[1] ?? '').includes('adj'));
       if (hasAdj && sbMap[prevLow] !== undefined) {
-        const adjEntry = dictMulti[low].find(e => (e[1] || '').includes('adj'));
+        const adjEntry = (dictMulti[low] as string[][]).find((e: string[]) => (e[1] ?? '').includes('adj'));
+        if (!adjEntry) return null;
         return {
           word: orig, root: adjEntry[0], pos: 'adj', status: 'exact',
           desc: `Adjectivo qualificative posponite al substantivo "${prevLow}" (IALA §31, §33)`,
@@ -1565,19 +1566,19 @@ window.IALAConjugator = (function() {
 
     // 4.b Deconjugation verbal complete pro tote le formas flexive (Passato, Futuro, Conditional, etc.)
     if (typeof deconjugateInterlingua === 'function') {
-      const decompList = deconjugateInterlingua(low);
+      const decompList = deconjugateInterlingua(low, verbMap) as Array<{ infinitive: string; tense: string; formula: string }>;
       if (decompList && decompList.length > 0) {
         for (let di = 0; di < decompList.length; di++) {
           const cand = decompList[di];
-          if (verbMap && (verbMap[cand.infinitive] !== undefined || (dictMulti && dictMulti[cand.infinitive]))) {
+          if (cand && verbMap && (verbMap[cand.infinitive] !== undefined || (dictMulti && dictMulti[cand.infinitive]))) {
             return {
               word: orig,
               root: cand.infinitive,
               pos: 'vb',
               status: 'inflected',
-              desc: cand.formula ? `Forma flexive (${cand.tense}) de ${cand.infinitive} (${cand.formula})` : `Forma verbal de ${cand.infinitive}`,
-              tense: cand.tense,
-              dictEntry: [cand.infinitive, 'vb', '']
+              desc: cand?.formula ? `Forma flexive (${cand.tense}) de ${cand.infinitive} (${cand.formula})` : `Forma verbal de ${cand?.infinitive ?? ''}`,
+              tense: cand?.tense,
+              dictEntry: [cand?.infinitive ?? '', 'vb', '']
             };
           }
         }
@@ -1745,18 +1746,18 @@ window.IALAConjugator = (function() {
     if (low.endsWith('es') && low.length > 3) {
       const cand = low.slice(0, -2);
       if (dictMulti[cand]) {
-        const p = dictMulti[cand][0][1];
+        const p = (dictMulti[cand] as string[][])[0]![1]!;
         return {
           word: orig, root: cand, pos: `${p} (pl)`, status: 'plural',
           desc: `Plural consonantic (-es) de "${cand}" (IALA §21)`,
-          dictEntry: dictMulti[cand][0]
+          dictEntry: (dictMulti[cand] as string[][])[0]!
         };
       }
     }
     if (low.endsWith('s') && low.length > 2) {
       const cand = low.slice(0, -1);
       if (dictMulti[cand]) {
-        const p = dictMulti[cand][0][1];
+        const p = (dictMulti[cand] as string[][])[0]![1]!;
         return {
           word: orig, root: cand, pos: `${p} (pl)`, status: 'plural',
           desc: `Plural vocalic (-s) de "${cand}" (IALA §21)`,
@@ -1768,16 +1769,16 @@ window.IALAConjugator = (function() {
     // 8. Entrada directa en el Diccionario
     if (dictMulti[low]) {
       const entries = dictMulti[low];
-      let chosen = entries[0];
+      const chosen = (entries as string[][])[0]!;
       if (entries.length > 1) {
         if (['le', 'un', 'del', 'al'].includes(prevLow)) {
-          const sbChoice = entries.find(e => (e[1] || '').includes('sb'));
-          if (sbChoice) chosen = sbChoice;
+          const sbChoice = (entries as string[][]).find((e: string[]) => (e[1] ?? '').includes('sb'));
+          if (sbChoice) { (entries as string[][])[0] = sbChoice; }
         }
       }
       return {
-        word: orig, root: chosen[0], pos: chosen[1], status: 'exact',
-        desc: `Entrata directa (${chosen[1].toUpperCase()})`,
+        word: orig, root: chosen[0]!, pos: chosen[1]!, status: 'exact',
+        desc: `Entrata directa (${chosen[1]!.toUpperCase()})`,
         dictEntry: chosen
       };
     }
@@ -1786,12 +1787,12 @@ window.IALAConjugator = (function() {
     // Reconnection de graphias simplificate con le IED classic (p.ex. fonetic -> phonetic, tirano -> tyranno, etc.)
     const collateral = resolveCollateralOrthography(low, dictMulti);
     if (collateral && collateral.length > 0) {
-      const best = collateral[0];
-      const p = (best.dictEntry[0] && dictMulti[best.classicalWord]) ? dictMulti[best.classicalWord][0][1] : 'adj/sb/vb';
+      const best = collateral[0] as { dictEntry: unknown[]; classicalWord: string; desc: string; ruleId: string };
+      const p = (best.dictEntry[0] && dictMulti[best.classicalWord]) ? (dictMulti[best.classicalWord] as string[][])[0]![1]! : 'adj/sb/vb';
       return {
         word: orig, root: best.classicalWord, pos: p, status: 'collateral',
         desc: `Orthographia Collateral simplificate pro "${best.classicalWord}" (${best.desc}) [IALA ${best.ruleId}]`,
-        dictEntry: dictMulti[best.classicalWord] ? dictMulti[best.classicalWord][0] : [best.classicalWord, p, '']
+        dictEntry: dictMulti[best.classicalWord] ? (dictMulti[best.classicalWord] as string[][])[0]! : [best.classicalWord, p, '']
       };
     }
 
@@ -1810,8 +1811,8 @@ window.IALAConjugator = (function() {
       if (low.startsWith(pref.p) && low.length > pref.p.length + 3) {
         const stem = low.slice(pref.p.length);
         if (dictMulti[stem]) {
-          const baseEntry = dictMulti[stem][0];
-          const basePos = baseEntry[1] || 'sb';
+          const baseEntry = (dictMulti[stem] as string[][])[0]!;
+          const basePos = baseEntry[1] ?? 'sb';
           return {
             word: orig,
             root: stem,
@@ -1837,20 +1838,28 @@ window.IALAConjugator = (function() {
   }
 
   return {
-    conjugate: conjugateInterlingua,
-    inflectAdjective: inflectAdjective,
-    pluralizeNoun: pluralizeNoun,
-    deconjugateInterlingua: deconjugateInterlingua,
-    deconstructUniversal: deconstructUniversal,
-    resolveCollateralOrthography: resolveCollateralOrthography,
+    conjugate: conjugateInterlingua as IALAConjugatorAPI['conjugate'],
+    inflectAdjective: inflectAdjective as IALAConjugatorAPI['inflectAdjective'],
+    pluralizeNoun: pluralizeNoun as IALAConjugatorAPI['pluralizeNoun'],
+    deconjugateInterlingua: deconjugateInterlingua as IALAConjugatorAPI['deconjugateInterlingua'],
+    deconstructUniversal: deconstructUniversal as IALAConjugatorAPI['deconstructUniversal'],
+    resolveCollateralOrthography: resolveCollateralOrthography as IALAConjugatorAPI['resolveCollateralOrthography'],
     computeIALAStressHTML: computeIALAStressHTML,
     getInterlinguaIPA: getInterlinguaIPA,
     levenshteinDistance: levenshteinDistance,
     findSpellingSuggestions: findSpellingSuggestions,
-    analyzeTextTokenContextual: analyzeTextTokenContextual,
+    analyzeTextTokenContextual: analyzeTextTokenContextual as IALAConjugatorAPI['analyzeTextTokenContextual'],
     numAtomInterlingua: numAtomInterlingua,
     transcribeIntInterlingua: transcribeIntInterlingua,
     transcribeNumberFullInterlingua: transcribeNumberFullInterlingua
   };
 
 })();
+
+// Exportacion ESM publica del modulo
+export const IALAConjugator = _IALAConjugatorImpl;
+
+// Retrocompatibilitate con scripts global (script tags sin bundler)
+if (typeof window !== 'undefined') {
+  window.IALAConjugator = IALAConjugator;
+}

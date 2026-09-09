@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="src/assets/style.css">
 </head>
 <body data-style="modern">
   <div class="app-layout">
@@ -377,18 +377,10 @@
   </div>
 
   <!-- Load Embedded Lexicon Data -->
-  <script src="data.js?v=20260907-4"></script>
-  <!-- Load Morphology & Conjugation Engine -->
-  <script src="conjugator.js?v=20260907-4"></script>
-  <!-- Load Interlingua Phonetic Transcriber -->
-  <script src="transcriber.js?v=20260907-4"></script>
-  <!-- Load Environment Credentials (Ignorate per Git) -->
-  <script src="env.js?v=20260907-7"></script>
-  <!-- Load Google Cloud TTS Engine -->
-  <script src="tts.js?v=20260907-6"></script>
-  <!-- Load Audio Configuration Modal Component -->
-  <script src="audioConfigModal.js?v=20260907-6"></script>
-  <!-- Load App Controller -->
-  <script src="app.js?v=20260907-5"></script>
+  <script src="src/data/data.js?v=20260907-4"></script>
+  <!-- Load App Script -->
+  <script type="module" src="./src/main.ts"></script>
+  <!-- Load Environment Credentials -->
+  <script src="src/config/env.js?v=20260907-7"></script>
 </body>
 </html>
