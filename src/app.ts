@@ -1,11 +1,12 @@
 import type { VerbParadigm, AdjParadigm, NounParadigm, AnalysisResult, RawDictEntry } from './types/global';
+import { DICTIONARIO_DATA } from './data/data';
 import './conjugator';
 import './transcriber';
 import './tts';
 import './components/AudioConfigModal';
 
 (function() {
-  const data: readonly RawDictEntry[] = (window as Window & { DICTIONARIO_DATA?: readonly RawDictEntry[] }).DICTIONARIO_DATA || [];
+  const data: readonly RawDictEntry[] = DICTIONARIO_DATA;
   const morpho = window.IALAConjugator;
 
   // Indices rapide de Verbos, Adjectivos, Substantivos, Adverbios e Multi-entrattas (prototype-safe)

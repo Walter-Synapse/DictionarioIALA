@@ -1,4 +1,7 @@
-window.DICTIONARIO_DATA = [
+import type { RawDictEntry } from "../types/global";
+
+// Thesauro lexicographic de Interlingua (IALA 51.511 entratas)
+export const DICTIONARIO_DATA: readonly RawDictEntry[] = [
   ["a", "prep", ""],
   ["a cappella", "adv, adj", ""],
   ["a fortiori", "", ""],

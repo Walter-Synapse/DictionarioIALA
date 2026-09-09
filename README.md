@@ -151,7 +151,7 @@ DictionarioIALA/
     ├── components/             # Componentes de UI modular (AudioConfigModal.ts)
     ├── config/                 # Configurators de ambiente runtime
     ├── data/                   # Thesauro lexicographic de 51.511 parolas
-    │   └── data.js             # Base de datos lexicographic de Cleij & Breinstrup
+    │   └── data.ts             # Base de datos lexicographic in TypeScript (Cleij & Breinstrup)
     └── types/                  # Definitiones de typos e interfaces TypeScript
 ```
 
