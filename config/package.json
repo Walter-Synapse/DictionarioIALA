@@ -1,6 +1,6 @@
 {
   "name": "dictionarioiala",
-  "version": "1.8.0",
+  "version": "1.10.0",
   "description": "Dictionario electronic e motor morphologic de Interlingua (IALA)",
   "type": "module",
   "scripts": {

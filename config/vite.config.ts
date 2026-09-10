@@ -8,7 +8,7 @@ export default defineConfig({
     strictPort: true
   },
   build: {
-    outDir: process.env.BUILD_TARGET === 'tauri' ? '../dist_tauri' : '../dist_web',
+    outDir: process.env.BUILD_TARGET === 'tauri' ? 'dist_tauri' : 'dist_web',
     emptyOutDir: true,
     rollupOptions: {
       input: {

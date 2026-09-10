@@ -9,6 +9,8 @@
 
 'use strict';
 
+import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
+
 // §1: Le litteras e lor nomines in Interlingua
 const iaLetterName = function(c: string): string | null {
   const lower = c.toLowerCase();
@@ -211,20 +213,27 @@ const transcribeWordInterlingua = function(word: string): string {
   const endsInVowel = isVowel(lastCharBase);
   const numVowels = baseVowelIndices.length;
 
+  const baseWord = chars.slice(0, effectiveLen).join('');
+
   let stressedCharIdx: number;
-  if (endsInVowel) {
+  if (INTERLINGUA_STRESS_EXCEPTIONS[baseWord] !== undefined) {
+    stressedCharIdx = INTERLINGUA_STRESS_EXCEPTIONS[baseWord]!;
+  } else if (endsInVowel) {
     if (numVowels >= 2) {
       stressedCharIdx = baseVowelIndices[numVowels - 2]!;
     } else {
       stressedCharIdx = baseVowelIndices[0]!;
     }
   } else {
-    stressedCharIdx = baseVowelIndices[numVowels - 1]!;
+    // IED: 'novem' e compositos (p.ex. 'dece-novem') es paroxytonos (n<u>o</u>vem)
+    if ((baseWord === 'novem' || baseWord.endsWith('-novem')) && numVowels >= 2) {
+      stressedCharIdx = baseVowelIndices[numVowels - 2]!;
+    } else {
+      stressedCharIdx = baseVowelIndices[numVowels - 1]!;
+    }
   }
 
-  const baseWord = chars.slice(0, effectiveLen).join('');
-
-  if (numVowels >= 3) {
+  if (INTERLINGUA_STRESS_EXCEPTIONS[baseWord] === undefined && numVowels >= 3) {
     if (baseWord.endsWith('le') || baseWord.endsWith('ne') || baseWord.endsWith('re')) {
       const suffixLen = 2;
       if (effectiveLen > suffixLen && isVowel(chars[effectiveLen - suffixLen - 1]!)) {
@@ -250,7 +259,7 @@ const transcribeWordInterlingua = function(word: string): string {
   }
 
   const weakEndings = ['ia', 'ie', 'io', 'iu', 'ua', 'ue', 'uo', 'ea', 'eo', 'eu'];
-  if (numVowels >= 3 && weakEndings.some(function(s) { return baseWord.endsWith(s); })) {
+  if (INTERLINGUA_STRESS_EXCEPTIONS[baseWord] === undefined && numVowels >= 3 && weakEndings.some(function(s) { return baseWord.endsWith(s); })) {
     const isAtonicIaOrNce = baseWord.endsWith('ntia') || [
       'gloria', 'gratia', 'victoria', 'memoria', 'historia', 'injuria',
       'curia', 'miseria', 'furia', 'penuria', 'invidia', 'perfidia',

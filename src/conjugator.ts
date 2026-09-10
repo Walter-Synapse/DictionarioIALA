@@ -1,5 +1,6 @@
 // Motor morphologic de Interlingua (IALA)
 import type { IALAConjugatorAPI, AdjParadigm, NounParadigm, AnalysisResult, CollateralMatch, VerbDeconjugation } from './types/global';
+import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
 
 /**
  * Motor Morphologic e Lexicographic Universal pro Interlingua (IALA §§14-115)
@@ -602,6 +603,16 @@ import type { IALAConjugatorAPI, AdjParadigm, NounParadigm, AnalysisResult, Coll
       return { html: w, isIrregular: false, ruleDesc: 'Monosyllabo' };
     }
 
+    const lowerW = w.toLowerCase();
+    if (INTERLINGUA_STRESS_EXCEPTIONS[lowerW] !== undefined) {
+      const targetIdx = INTERLINGUA_STRESS_EXCEPTIONS[lowerW]!;
+      return {
+        html: w.slice(0, targetIdx) + '<u class="stress-irregular">' + w[targetIdx] + '</u>' + w.slice(targetIdx + 1),
+        isIrregular: true,
+        ruleDesc: 'Accento irregular/proparoxytono explicitemente registrate in le IED'
+      };
+    }
+
     // Regula IALA §10: Adjectivos e substantivos in -le, -ne, -re precedite per vocal:
     // accento super le tertie syllaba ab le fin (frágile, órdine, témpore).
     if (/(?:[aeiouy](?:le|ne|re))$/i.test(w) && vowels.length >= 3) {
@@ -768,20 +779,26 @@ import type { IALAConjugatorAPI, AdjParadigm, NounParadigm, AnalysisResult, Coll
       const lastCharBase = chars[effectiveLen - 1]!;
       const endsInVowel = isVowel(lastCharBase);
       const numVowels = baseVowelIndices.length;
+      const baseWord = chars.slice(0, effectiveLen).join('');
 
-      if (endsInVowel) {
+      if (INTERLINGUA_STRESS_EXCEPTIONS[baseWord] !== undefined) {
+        stressedCharIdx = INTERLINGUA_STRESS_EXCEPTIONS[baseWord]!;
+      } else if (endsInVowel) {
         if (numVowels >= 2) {
           stressedCharIdx = baseVowelIndices[numVowels - 2]!;
         } else {
           stressedCharIdx = baseVowelIndices[0]!;
         }
       } else {
-        stressedCharIdx = baseVowelIndices[numVowels - 1]!;
+        // IED: 'novem' e compositos (p.ex. 'dece-novem') es paroxytonos (n<u>o</u>vem)
+        if ((baseWord === 'novem' || baseWord.endsWith('-novem')) && numVowels >= 2) {
+          stressedCharIdx = baseVowelIndices[numVowels - 2]!;
+        } else {
+          stressedCharIdx = baseVowelIndices[numVowels - 1]!;
+        }
       }
 
-      const baseWord = chars.slice(0, effectiveLen).join('');
-
-      if (numVowels >= 3) {
+      if (INTERLINGUA_STRESS_EXCEPTIONS[baseWord] === undefined && numVowels >= 3) {
         if (baseWord.endsWith('le') || baseWord.endsWith('ne') || baseWord.endsWith('re')) {
           const suffixLen = 2;
           if (effectiveLen > suffixLen && isVowel(chars[effectiveLen - suffixLen - 1]!)) {
@@ -806,7 +823,7 @@ import type { IALAConjugatorAPI, AdjParadigm, NounParadigm, AnalysisResult, Coll
       }
 
       const weakEndings = ['ia', 'ie', 'io', 'iu', 'ua', 'ue', 'uo', 'ea', 'eo', 'eu'];
-      if (numVowels >= 3 && weakEndings.some((s) => baseWord.endsWith(s))) {
+      if (INTERLINGUA_STRESS_EXCEPTIONS[baseWord] === undefined && numVowels >= 3 && weakEndings.some((s) => baseWord.endsWith(s))) {
         const tonicHiatusEndings = [
           'logia', 'graphia', 'metria', 'scopia', 'mania', 'phobia',
           'latria', 'gonia', 'nomia', 'tomia', 'pathia', 'cratia',
