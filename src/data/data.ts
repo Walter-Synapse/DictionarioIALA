@@ -38973,6 +38973,7 @@ export const DICTIONARIO_DATA: readonly RawDictEntry[] = [
   ["pulpose", "adj", ""],
   ["pulsar", "adj", ""],
   ["pulsar", "sb", "p<u>u</u>lsar"],
+  ["pulsar", "vb", ""],
   ["pulsata", "sb", ""],
   ["pulsatile", "adj", ""],
   ["pulsatilitate", "sb", ""],
