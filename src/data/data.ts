@@ -16562,6 +16562,7 @@ export const DICTIONARIO_DATA: readonly RawDictEntry[] = [
   ["étagère", "sb", ""],
   ["etape", "sb", ""],
   ["etate", "sb", ""],
+  ["etc.", "adv", ""],
   ["etcetera", "adv", "etc<u>e</u>tera"],
   ["eternal", "adj", ""],
   ["eterne", "adj", ""],
