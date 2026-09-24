@@ -12,6 +12,11 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 RELEASES_DIR="$ROOT_DIR/releases"
 VERSION_FILE="$ROOT_DIR/version.json"
 
+export ANDROID_HOME="$HOME/.android-sdk"
+export ANDROID_SDK_ROOT="$HOME/.android-sdk"
+export NDK_HOME="$HOME/.android-sdk/ndk/27.2.12479018"
+export PATH="$HOME/.cargo/bin:$HOME/.android-sdk/cmdline-tools/latest/bin:$HOME/.android-sdk/platform-tools:$PATH"
+
 cd "$ROOT_DIR"
 
 if [ ! -f "$VERSION_FILE" ]; then

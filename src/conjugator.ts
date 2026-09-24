@@ -4,51 +4,51 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
 
 /**
  * Motor Morphologic e Lexicographic Universal pro Interlingua (IALA §§14-115)
- * Deconstruction, derivation, flexion e analyse contextual de parrafos:
+ * Deconstruction, derivation, flexion e analyse contextual de paragraphos:
  * 1. Verbos (IALA §§94-115)
  * 2. Adjectivos (Comparation, Superlativo -issime, Adverbios -mente, Substantivation) (IALA §§31-47)
  * 3. Substantivos (Plurales regular, docte in -is e consonantic in -ches) (IALA §§21-25)
  * 4. Articulos e Contractiones obligatori (al, del) [IALA §17]
  * 5. Pronomines e Determinantes (IALA §§54-75)
- * 6. Disambiguation contextual de partes del discurso (sin hardcoding de lemas especificos)
- * 7. Corrector ortographic con distantia de Levenshtein: suggerimentos honestos "¿Quisiste decir...?"
+ * 6. Disambiguation contextual de partes del discurso (sin codification rigide de lemas specific)
+ * 7. Corrector orthographic con distantia de Levenshtein: suggestiones "Esque tu voleva dicer...?"
  */
 
   const _IALAConjugatorImpl = (function(): IALAConjugatorAPI {
 
-  // Conjunto exhaustivo de palabras gramaticales cerradas de Interlingua (IALA §§17-75)
-  // Utilizado para evitar clasificar erróneamente palabras al inicio de frase como nombres propios.
-  // ECMAScript best practice: Set constante O(1) asignado una sola vez en memoria.
+  // Ensemble exhaustive de parolas grammatical claudite de Interlingua (IALA §§17-75)
+  // Utilisate pro evitar le classification erronee de parolas a initio de phrase como nomines proprie.
+  // Praxi optime ECMAScript: Set constante O(1) assignate un sol vice in memoria.
   const IALA_FUNCTION_WORDS = new Set([
-    // Pronombres personales y reflexivos (§§54-57)
+    // Pronomines personal e reflexive (§§54-57)
     'Io', 'Tu', 'Ille', 'Illa', 'Illo', 'Nos', 'Vos', 'Illes', 'Illas', 'Illos',
     'Me', 'Te', 'Se', 'Lor', 'Lore', 'On',
-    // Pronombres y determinantes posesivos (§§58-66)
+    // Pronomines e determinantes possessive (§§58-66)
     'Mi', 'Mie', 'Mies', 'Tue', 'Tues', 'Su', 'Sue', 'Sues',
     'Nostre', 'Nostres', 'Vostre', 'Vostres',
-    // Demostrativos (§§67-71)
+    // Demonstrativos (§§67-71)
     'Iste', 'Ista', 'Isto', 'Istes', 'Istas', 'Isti',
     'Ille', 'Illa', 'Illo', 'Illes', 'Illas', 'Illos',
     'Aquel', 'Aquela', 'Aquello', 'Aqueles', 'Aquelas',
     'Ce', 'Tal', 'Tales', 'Qual', 'Quales',
-    // Artículos y contracciones (§§17-20)
+    // Articulos e contractiones (§§17-20)
     'Le', 'Un', 'Unes', 'Al', 'Del',
-    // Pronombres y determinantes relativos e interrogativos (§§72-74)
+    // Pronomines e determinantes relative e interrogative (§§72-74)
     'Qui', 'Que', 'Cujus', 'Qual', 'Ubi', 'Quando', 'Como', 'Quanto', 'Quantos', 'Tanto', 'Tantos',
-    // Indefinidos y cuantitativos (§§21, 75)
+    // Indefinitos e quantitativos (§§21, 75)
     'Alcun', 'Alcuno', 'Alcuna', 'Alcunos', 'Alcunas',
     'Nulle', 'Nullo', 'Nulla', 'Nihil', 'Nil',
     'Omni', 'Omne', 'Omnes', 'Tot', 'Tote', 'Totes',
     'Cata', 'Alco', 'Alique', 'Cataun', 'Catauno', 'Catauna',
     'Multo', 'Multos', 'Poco', 'Pocos', 'Plure', 'Plures',
     'Certo', 'Certos', 'Mesme', 'Mesmes', 'Altere', 'Alteres',
-    // Conectores oracionales, conjunciones y preposiciones iniciales de uso frecuente
+    // Connectores orational, conjunctiones e prepositiones initial de uso frequente
     'In', 'Pro', 'Per', 'Con', 'Sin', 'De', 'A', 'Super', 'Sub', 'Inter', 'Intra', 'Extra',
     'Post', 'Ante', 'Durante', 'Ultra', 'Circa', 'Secundo', 'Juxta', 'Verso',
     'Sed', 'Si', 'Tamen', 'Nam', 'Ergo', 'Dum', 'Id', 'Ido', 'Ma'
   ]);
 
-  /// Átomos numéricos básicos para Interlingua (IALA §47)
+  /// Atomos numeric basic pro Interlingua (IALA §47)
   const numAtomInterlingua = function(n: number): string {
     const map: Record<number, string> = {
       0: 'zero', 1: 'un', 2: 'duo', 3: 'tres', 4: 'quatro', 5: 'cinque',
@@ -60,7 +60,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
     return map[n] ?? '';
   };
 
-  /// Conversión recursiva de enteros a texto en Interlingua (IALA §47)
+  /// Conversion recursive de numeros integre a texto in Interlingua (IALA §47)
   const transcribeIntInterlingua = function(n: number): string {
     if (n === 0) {
       return numAtomInterlingua(0);
@@ -68,7 +68,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
 
     const parts: string[] = [];
 
-    // Escalas grandes (Million, Milliardo, Billion, Billiardo, Trillion)
+    // Scalas grande (Million, Milliardo, Billion, Billiardo, Trillion)
     const scales: [number, string, string][] = [
       [1000000000000000000, 'trillion', 'trilliones'],
       [1000000000000000, 'billiardo', 'billiardos'],
@@ -139,7 +139,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
     return parts.join(' ');
   };
 
-  // Manejo de numeros con signo, formatos de milles e decimales pro Interlingua (IALA §47)
+  // Gestion de numeros con signo, formatos de milles e decimales pro Interlingua (IALA §47)
   const transcribeNumberFullInterlingua = function(s: string | number): string | null {
     if (!s) return null;
     // Recognition de tokens horari como 14h15, 13h45
@@ -165,7 +165,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
       core = str.slice(1);
     }
 
-    // Entero con separador de miles (ej: 51.511 o 1.927 o 1.000.000)
+    // Integro con separator de milles (e.g. 51.511 o 1.927 o 1.000.000)
     if (/^\d{1,3}(\.\d{3})+$/.test(core)) {
       const pureInt = parseInt(core.replace(/\./g, ''), 10);
       let txt = transcribeIntInterlingua(pureInt);
@@ -173,7 +173,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
       return txt;
     }
 
-    // Entero
+    // Integro
     if (/^\d+$/.test(core)) {
       const n = parseInt(core, 10);
       let txt = transcribeIntInterlingua(n);
@@ -183,7 +183,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
       return txt;
     }
 
-    // Decimal (ej: 3.14 o 3,14)
+    // Decimal (e.g. 3.14 o 3,14)
     const decRe = /^(\d+)[.,](\d+)$/;
     const caps = core.match(decRe);
     if (caps) {
@@ -191,7 +191,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
       let out = transcribeIntInterlingua(intVal);
       out += ' comma';
 
-      // Lectura de decimales: agrupados si <= 2 digitos, digito a digito si > 2
+      // Lectura de decimales: gruppate si <= 2 digitos, digito per digito si > 2
       if (caps[2]!.length <= 2) {
         const fracVal = parseInt(caps[2]!, 10);
         out += ' ' + transcribeIntInterlingua(fracVal);
@@ -211,7 +211,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
     return null;
   };
 
-  /// Particípios passatos collaterales e classicos con radices primarias (IALA §§95, 100)
+  /// Participios passatos collateral e classic con radices primari (IALA §§95, 100)
   const COLLATERAL_PARTICIPLES = {
     'extraite': { inf: 'extraher', desc: 'Participio passate collateral de "extraher" (IALA §§95, 100)' },
     'extracte': { inf: 'extraher', desc: 'Participio passate classic de "extraher" (IALA §§95, 100)' },
@@ -253,7 +253,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
     'supposte': { inf: 'supponer', desc: 'Participio passate classic de "supponer" (IALA §§95, 100)' }
   };
 
-  /// Prefixos productivos de derivation en Interlingua (IALA §155)
+  /// Prefixos productive de derivation in Interlingua (IALA §155)
   const PRODUCTIVE_PREFIXES = [
     { p: 'de', desc: 'action inverse, remotion o separation' },
     { p: 'des', desc: 'negation o inversion' },
@@ -269,7 +269,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
     { p: 'co', desc: 'simul, union' }
   ];
 
-  /// Suffixos productivos de derivation regulari in Interlingua (IALA §§136-154)
+  /// Suffixos productive de derivation regulari in Interlingua (IALA §§136-154)
   /// Cata suffixo possede restrictiones morphosyntactic stricte super le categoria del radice
   interface ProductiveSuffixRule {
     suffix: string;
@@ -366,7 +366,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
   ];
 
   /**
-   * Genera el paradigma completo de conjugacion de un verbo en Interlingua (§§94-115)
+   * Genera le paradigma complete de conjugation de un verbo in Interlingua (§§94-115)
    */
   function conjugateInterlingua(infinitive: string): unknown {
     const inf = (infinitive || '').toLowerCase().trim();
@@ -450,7 +450,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
   }
 
   /**
-   * Genera el paradigma completo y formas derivadas de un Adjetivo (§§31-47)
+   * Genera le paradigma complete e formas derivate de un Adjectivo (§§31-47)
    */
   function inflectAdjective(adjective: string): unknown {
     const a = (adjective || '').toLowerCase().trim();
@@ -545,27 +545,83 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
   }
 
   /**
-   * Genera el plural de un sustantivo segun IALA §§21-25
+   * Genera le plural canonic de un substantivo secundo IALA §§21-25
+   * 1. Regula general post vocal (+s) e post consonante (+es) (IALA §25)
+   * 2. Final in -c cambia a -ches pro preservar le sono /k/ (IALA §25: roc -> roches, almanac -> almanaches)
+   * 3. Vocabulos docte de origine grec/latin in -is (-is -> -es) (IALA §25: genesis -> geneses, hepatitis -> hepatites, analysis -> analyses)
+   * 4. Compositos singular con secunde elemento jam plural (invariabiles) (IALA §25: guardacostas -> guardacostas, rumpenuces -> rumpenuces)
+   * 5. Vocabulos hospite con plural etymologic retenite (IALA §25: test -> tests, lied -> lieder, addendum -> addenda)
    */
-  function pluralizeNoun(noun: string): unknown {
+  function pluralizeNoun(noun: string): NounParadigm | null {
     const n = (noun || '').toLowerCase().trim();
     if (!n) return null;
+
+    // 1. Compositos singular con secunde elemento jam plural (IALA §25)
+    const invariantPlurals: Record<string, string> = {
+      'guardacostas': 'Substantivo composite con secunde elemento plural (invariabile: "un guardacostas, duo guardacostas") [IALA §25]',
+      'rumpenuces': 'Substantivo composite con secunde elemento plural (invariabile: "un rumpenuces, duo rumpenuces") [IALA §25]',
+      'paracolpos': 'Substantivo composite con secunde elemento plural (invariabile: "un paracolpos, duo paracolpos") [IALA §25]',
+      'guardalitteras': 'Substantivo composite con secunde elemento plural (invariabile: "un guardalitteras, duo guardalitteras") [IALA §25]',
+      'coperiaures': 'Substantivo composite con secunde elemento plural (invariabile: "un coperiaures, duo coperiaures") [IALA §25]',
+      'marcapaginas': 'Substantivo composite con secunde elemento plural (invariabile: "un marcapaginas, duo marcapaginas") [IALA §25]',
+      'portabottilias': 'Substantivo composite con secunde elemento plural (invariabile: "un portabottilias, duo portabottilias") [IALA §25]',
+      'portaaviones': 'Substantivo composite con secunde elemento plural (invariabile: "un portaaviones, duo portaaviones") [IALA §25]',
+      'tiralineas': 'Substantivo composite con secunde elemento plural (invariabile: "un tiralineas, duo tiralineas") [IALA §25]'
+    };
+
+    if (invariantPlurals[n]) {
+      return {
+        type: 'noun',
+        singular: n,
+        plural: n,
+        rule: invariantPlurals[n]!
+      };
+    }
+
+    // 2. Vocabulos hospite con plural etymologic retenite (IALA §25)
+    const guestWords: Record<string, { pl: string; desc: string }> = {
+      'test': { pl: 'tests', desc: 'Vocabulo hospite anglese con plural in -s: test -> tests (IALA §25)' },
+      'lied': { pl: 'lieder', desc: 'Vocabulo hospite germano con plural in -er: lied -> lieder (IALA §25)' },
+      'addendum': { pl: 'addenda', desc: 'Vocabulo hospite neo-latino con plural in -a: addendum -> addenda (IALA §25)' },
+      'memorandum': { pl: 'memoranda', desc: 'Vocabulo hospite neo-latino con plural in -a: memorandum -> memoranda (IALA §25)' },
+      'referendum': { pl: 'referenda', desc: 'Vocabulo hospite neo-latino con plural in -a: referendum -> referenda (IALA §25)' },
+      'desideratum': { pl: 'desiderata', desc: 'Vocabulo hospite neo-latino con plural in -a: desideratum -> desiderata (IALA §25)' },
+      'erratum': { pl: 'errata', desc: 'Vocabulo hospite neo-latino con plural in -a: erratum -> errata (IALA §25)' },
+      'corpus': { pl: 'corpora', desc: 'Vocabulo hospite latino con plural in -ora: corpus -> corpora (IALA §25)' }
+    };
+
+    if (guestWords[n]) {
+      const g = guestWords[n]!;
+      return {
+        type: 'noun',
+        singular: n,
+        plural: g.pl,
+        rule: g.desc
+      };
+    }
 
     let plural = "";
     let rule = "";
 
+    // 3. Final in -c cambia ante -es a -ch pro preservar le phonema oclusiv velar /k/ (IALA §25)
     if (n.endsWith('c')) {
       plural = n + 'hes';
-      rule = "Final -c cambia ante -es a -ch: " + n + " → " + plural + " (§21)";
-    } else if (n.endsWith('is')) {
+      rule = "Final -c cambia ante -es a -ch pro preservar le sono /k/: " + n + " -> " + plural + " (IALA §25)";
+    }
+    // 4. Vocabulos docte de origine grec/latin in -is: plural in -es (como si habeva -e) (IALA §25)
+    else if (n.endsWith('is')) {
       plural = n.slice(0, -2) + 'es';
-      rule = "Vocabulo docte in -is forma plural como con -e: " + n + " → " + plural + " (§22)";
-    } else if (/[bcdfghjklmnpqrstvwxyz]$/i.test(n)) {
+      rule = "Vocabulo docte in -is forma plural como con -e (-is -> -es): " + n + " -> " + plural + " (IALA §25)";
+    }
+    // 5. Plural post consonante per addition de -es (IALA §25)
+    else if (/[bcdfghjklmnpqrstvwxyz]$/i.test(n)) {
       plural = n + 'es';
-      rule = "Plural post consonante per addition de -es: " + n + " → " + plural + " (§21)";
-    } else {
+      rule = "Plural consonantic regular per addition de -es: " + n + " -> " + plural + " (IALA §25)";
+    }
+    // 6. Plural post vocal per addition de -s (IALA §25)
+    else {
       plural = n + 's';
-      rule = "Plural post vocal per addition de -s: " + n + " → " + plural + " (§21)";
+      rule = "Plural vocalic regular per addition de -s: " + n + " -> " + plural + " (IALA §25)";
     }
 
     return {
@@ -587,7 +643,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
   function computeIALAStressSingleToken(w: string): { html: string; isIrregular: boolean; ruleDesc: string } {
     if (!w) return { html: '', isIrregular: false, ruleDesc: '' };
 
-    // Localizar indices de vocales (a, e, i, o, u, y)
+    // Localisar indices de vocales (a, e, i, o, u, y)
     const vowels: number[] = [];
     for (let i = 0; i < w.length; i++) {
       if (/[aeiouyáéíóúàèìòù]/i.test(w[i]!)) {
@@ -599,7 +655,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
       return { html: w, isIrregular: false, ruleDesc: 'Sin vocales' };
     }
     if (vowels.length === 1) {
-      // Monosílabo: no subrayar en sintagmas o palabras de 1 letra
+      // Monosyllabo: non sublinear in syntagmas o parolas de 1 littera
       return { html: w, isIrregular: false, ruleDesc: 'Monosyllabo' };
     }
 
@@ -621,6 +677,28 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
         html: w.slice(0, idx) + '<u class="stress-irregular">' + w[idx] + '</u>' + w.slice(idx + 1),
         isIrregular: true,
         ruleDesc: 'Accento super le 3e syllaba ab le fin pro desinentia in -le, -ne o -re precedite per vocal (IALA §10)'
+      };
+    }
+
+    // Regula IALA §107: Tempore Futuro Simple (-ara, -era, -ira)
+    // Le futuro es formate per adder le desinentia accentuate -a super le infinitivo (oxytono).
+    if (/(?:[aei]ra)$/i.test(w) && vowels.length >= 2) {
+      const targetIdx = vowels[vowels.length - 1]!;
+      return {
+        html: w.slice(0, targetIdx) + '<u class="stress-irregular">' + w[targetIdx] + '</u>' + w.slice(targetIdx + 1),
+        isIrregular: true,
+        ruleDesc: 'Futuro Simple: desinentia accentuate -a super le infinitivo (IALA §107)'
+      };
+    }
+
+    // Regula IALA §107: Conditional (-area, -erea, -irea)
+    // Le conditional es formate per adder le desinentia -ea accentuate super le -e (paroxytono).
+    if (/(?:[aei]rea)$/i.test(w) && vowels.length >= 3) {
+      const targetIdx = vowels[vowels.length - 2]!;
+      return {
+        html: w.slice(0, targetIdx) + '<u class="stress-irregular">' + w[targetIdx] + '</u>' + w.slice(targetIdx + 1),
+        isIrregular: true,
+        ruleDesc: 'Conditional: desinentia -ea accentuate super le vocal -e (IALA §107)'
       };
     }
 
@@ -706,8 +784,8 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
       };
     }
 
-    // Si es un sintagma de múltiples palabras (p.ex. 'a cappella', 'a fortiori', 'à la carte')
-    // o tiene sufijo de categoría pegado en data.js ('aborigines sb' -> 'aborigines')
+    // Si es un syntagma de plure parolas (p.ex. 'a cappella', 'a fortiori', 'à la carte')
+    // o ha suffixo de categoria attachate in data.js ('aborigines sb' -> 'aborigines')
     const cleaned = raw.replace(/\s+(sb|adj|vb|adv|prep|conj|npr)$/i, '');
 
     if (cleaned.includes(' ')) {
@@ -738,8 +816,8 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
   }
 
   /**
-   * Transcriptor Fonetic Universal IPA (Migrado directamente de Synapse interlinguaTranscriber.ts)
-   * Implementa las 14 reglas fonéticas canónicas de la UMI e IALA con silabación y acentuación IPA /.../
+   * Transcriptor Phonetic Universal IPA (Migrate directemente ab Synapse interlinguaTranscriber.ts)
+   * Implementa le regulas phonetic canonic de UMI e IALA con division syllabic e accentuation IPA /.../
    */
   function transcribeWordInterlinguaIPA(word: string, explicitHtml = ''): string {
     const lowerWord = (word || '').toLowerCase().trim();
@@ -749,7 +827,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
     const chars = [...lowerWord];
     if (chars.length === 0) return '';
 
-    // Extraer indice de acento explicito si existe (p.ex. abbat<u>i</u>a -> index 5 de 'i')
+    // Extraher indice de accento explicite si existe (p.ex. abbat<u>i</u>a -> indice 5 de 'i')
     let explicitStressIdx = -1;
     if (explicitHtml && explicitHtml.includes('<u>')) {
       const m = /<u>(.*?)<\/u>/i.exec(explicitHtml);
@@ -795,6 +873,17 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
           stressedCharIdx = baseVowelIndices[numVowels - 2]!;
         } else {
           stressedCharIdx = baseVowelIndices[numVowels - 1]!;
+        }
+      }
+
+      if (INTERLINGUA_STRESS_EXCEPTIONS[baseWord] === undefined && numVowels >= 2) {
+        // Regula IALA §107: Tempore Futuro Simple (-ara, -era, -ira) -> oxytono
+        if (/(?:[aei]ra)$/.test(baseWord)) {
+          stressedCharIdx = baseVowelIndices[numVowels - 1]!;
+        }
+        // Regula IALA §107: Conditional (-area, -erea, -irea) -> paroxytono super le 'e'
+        else if (/(?:[aei]rea)$/.test(baseWord) && numVowels >= 3) {
+          stressedCharIdx = baseVowelIndices[numVowels - 2]!;
         }
       }
 
@@ -1006,7 +1095,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
     const cleaned = (text || '').replace(/\s+(sb|adj|vb|adv|prep|conj|npr)$/i, '').trim();
     if (!cleaned) return '';
 
-    // Si es un numeral, se transcribe foneticamente el texto de las palabras
+    // Si es un numeral, se transcribe phoneticamente le texto del parolas
     const numTrans = transcribeNumberFullInterlingua(cleaned);
     if (numTrans) {
       const numWords = numTrans.replace(/-/g, ' ').split(/\s+/);
@@ -1023,7 +1112,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
   }
 
   /**
-   * Distancia de Levenshtein optimizada en memoria O(N)
+   * Distantia de Levenshtein optimisate in memoria O(N)
    */
   function levenshteinDistance(s1: string, s2: string): number {
     if (s1 === s2) return 0;
@@ -1052,8 +1141,8 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
   }
 
   /**
-   * Motor de Sugerencias Ortograficas "¿Quisiste decir...?"
-   * Busca en el vocabulario completo por distancia de edicion <= 2
+   * Motor de Suggestiones Orthographic "Esque tu voleva dicer...?"
+   * Cerca in le vocabulario complete per distantia de edition <= 2
    */
   function findSpellingSuggestions(word: string, vocabList: string[], maxDistance = 2, maxResults = 3): Array<{ word: string; distance: number }> {
     const q = (word || '').toLowerCase();
@@ -1065,7 +1154,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
       const cand = vocabList[i]!;
       const cLen = cand.length;
       if (Math.abs(cLen - qLen) > maxDistance) continue;
-      // Heuristica de velocidad: primera o ultima letra coincidente
+      // Heuristica de velocitate: prime o ultime littera coincidente
       if (cand[0] !== q[0] && cand[cLen - 1] !== q[qLen - 1]) continue;
 
       const dist = levenshteinDistance(q, cand);
@@ -1091,7 +1180,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
 
   /**
    * Resolutor de Orthographia Collateral (IALA §15)
-   * Restituye le forma classic del IED a partir de formas scribite in orthographia collateral simplificate:
+   * Restitue le forma classic del IED a partir de formas scribite in orthographia collateral simplificate:
    * (a) Simplification de consonantes duple: bb, dd, ff, gg, ll, mm, nn, pp, rr, tt, cc -> b, d, f...
    * (b) Vocal -y -> -i (tirano -> tyranno)
    * (c) Digrapho -ph- -> -f- (fonetic -> phonetic, emfatic -> emphatic)
@@ -1123,7 +1212,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
       }
     }
 
-    // 1. Transformaciones grafemicas IALA §15
+    // 1. Transformationes graphemic IALA §15
     // (c) f -> ph
     if (w.includes('f')) {
       tryCand(w.replace(/f/g, 'ph'), '§15c', 'Digrapho "ph" reimplaciate per "f" (IALA §15c)');
@@ -1139,7 +1228,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
       tryCand(w.replace(/(\w)t(\w)/, '$1th$2'), '§15e', 'Digrapho "th" simplificate per omission de "h" silente (IALA §15e)');
     }
 
-    // Combinacion (c) + (e): p.ex. patetic -> pathetic, emfatic -> emphatic
+    // Combination (c) + (e): p.ex. patetic -> pathetic, emfatic -> emphatic
     if (w.includes('f') && w.includes('t')) {
       tryCand(w.replace(/f/g, 'ph').replace(/t/g, 'th'), '§15c, §15e', 'Digraphos "ph" e "th" simplificate (IALA §15c, §15e)');
     }
@@ -1183,7 +1272,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
       tryCand(w + 're', '§15a, §15h', 'Simplification de "-rre" final a "-r" (IALA §15a, §15h)');
     }
 
-    // (a) Duplicacion de consonantes simplices
+    // (a) Duplication de consonantes simplices
     const doubleCons = ['c', 'l', 'm', 'n', 'p', 'r', 't', 'd', 'b', 'f', 'g'];
     for (let dc of doubleCons) {
       let pos = 0;
@@ -1194,7 +1283,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
       }
     }
 
-    // (b) Vocal i -> y e combinacion con consonantes duples (tirano -> tyranno)
+    // (b) Vocal i -> y e combination con consonantes duple (tirano -> tyranno)
     if (w.includes('i')) {
       const candY = w.replace(/i/, 'y');
       tryCand(candY, '§15b', 'Vocal "y" reimplaciate per "i" (IALA §15b)');
@@ -1212,7 +1301,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
   }
 
   /**
-   * Deconstruye cualquier termino ingresado en el buscador
+   * Deconstrue omne termino inserite in le motor de cerca
    */
   function deconstructUniversal(query: string, dictData: unknown, verbMap: Record<string, number>, adjMap: Record<string, number>, sbMap: Record<string, number>): AnalysisResult | null {
     const q = (query || '').toLowerCase().trim();
@@ -1266,27 +1355,27 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
     }
 
     if (q.endsWith('hes') && q.length > 3) {
-      const sing = q.slice(0, -3);
+      const sing = q.slice(0, -3) + 'c';
       if (sbMap && sbMap[sing] !== undefined) {
-        return { category: 'ia_plural', sourceWord: q, singular: sing, rule: "Plural regular de nomine finiente in -c (-c → -ches) (§21)", nounData: pluralizeNoun(sing) as NounParadigm };
-      }
-    }
-    if (q.endsWith('eses') || q.endsWith('ites')) {
-      const sing = q.slice(0, -2) + 'is';
-      if (sbMap && sbMap[sing] !== undefined) {
-        return { category: 'ia_plural', sourceWord: q, singular: sing, rule: "Plural de vocabulos docte in -is (-is → -es) (§22)", nounData: pluralizeNoun(sing) as NounParadigm };
+        return { category: 'ia_plural', sourceWord: q, singular: sing, rule: "Plural regular de nomine finiente in -c (-c -> -ches) (IALA §25)", nounData: pluralizeNoun(sing) as NounParadigm };
       }
     }
     if (q.endsWith('es') && q.length > 3) {
+      // Caso 1: Vocabulos docte in -is con plural in -es (p.ex. analyses -> analysis, geneses -> genesis, syntheses -> synthesis)
+      const candIs = q.slice(0, -2) + 'is';
+      if (sbMap && sbMap[candIs] !== undefined) {
+        return { category: 'ia_plural', sourceWord: q, singular: candIs, rule: "Plural de vocabulo docte in -is (-is -> -es) (IALA §25)", nounData: pluralizeNoun(candIs) as NounParadigm };
+      }
+      // Caso 2: Plural regular post consonante in -es (p.ex. flores -> flor, canes -> can, gases -> gas)
       const sing = q.slice(0, -2);
       if (sbMap && sbMap[sing] !== undefined) {
-        return { category: 'ia_plural', sourceWord: q, singular: sing, rule: "Plural post consonante con desinentia -es (§21)", nounData: pluralizeNoun(sing) as NounParadigm };
+        return { category: 'ia_plural', sourceWord: q, singular: sing, rule: "Plural consonantic regular con desinentia -es (IALA §25)", nounData: pluralizeNoun(sing) as NounParadigm };
       }
     }
     if (q.endsWith('s') && q.length > 2) {
       const sing = q.slice(0, -1);
       if (sbMap && sbMap[sing] !== undefined) {
-        return { category: 'ia_plural', sourceWord: q, singular: sing, rule: "Plural post vocal con desinentia -s (§21)", nounData: pluralizeNoun(sing) as NounParadigm };
+        return { category: 'ia_plural', sourceWord: q, singular: sing, rule: "Plural vocalic regular con desinentia -s (IALA §25)", nounData: pluralizeNoun(sing) as NounParadigm };
       }
     }
 
@@ -1297,7 +1386,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
       return { category: 'ia_collateral', sourceWord: q, matches: collateralMatches };
     }
 
-    // 6. Derivation con prefixos productivos (IALA §155) - e.g. deconstruction -> de- + construction
+    // 6. Derivation con prefixos productive (IALA §155) - e.g. deconstruction -> de- + construction
     for (const pref of PRODUCTIVE_PREFIXES) {
       if (q.startsWith(pref.p) && q.length > pref.p.length + 3) {
         const stem = q.slice(pref.p.length);
@@ -1316,7 +1405,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
       }
     }
 
-    // 7. Derivation con suffixos productivos (IALA §§136-154) - e.g. nutritionista -> nutrition + -ista
+    // 7. Derivation con suffixos productive (IALA §§136-154) - e.g. nutritionista -> nutrition + -ista
     for (const sfx of PRODUCTIVE_SUFFIXES) {
       if (q.endsWith(sfx.suffix) && q.length > sfx.suffix.length + 2) {
         const rawStem = q.slice(0, -sfx.suffix.length);
@@ -1351,7 +1440,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
   }
 
   /**
-   * Deconstruye una palabra ya conjugada en Interlingua (Verbos)
+   * Deconstrue un parola ja conjugate in Interlingua (Verbos)
    */
   function deconjugateInterlingua(word: string, verbMap: Record<string, number>): unknown {
     const w = (word || '').toLowerCase().trim();
@@ -1387,7 +1476,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
       return results;
     }
 
-    // Participios passatos collaterales (extraite -> extraher, extracte, etc.)
+    // Participios passatos collateral (extraite -> extraher, extracte, etc.)
     if ((COLLATERAL_PARTICIPLES as Record<string, unknown>)[w]) {
       const item = (COLLATERAL_PARTICIPLES as Record<string, { inf: string; desc: string }>)[w]!;
       results.push({
@@ -1442,9 +1531,9 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
     }
 
     // Participios presentes (IALA §93)
-    // Infinitivo en -ar -> tema -a- + -nte = -ante
-    // Infinitivo en -er -> tema -e- + -nte = -ente
-    // Infinitivo en -ir -> tema -i- -> -ie- + -nte = -iente
+    // Infinitivo in -ar -> thema -a- + -nte = -ante
+    // Infinitivo in -er -> thema -e- + -nte = -ente
+    // Infinitivo in -ir -> thema -i- -> -ie- + -nte = -iente
     if (w.endsWith('ante') && w.length > 4) {
       const inf = w.slice(0, -4) + 'ar';
       if (!verbMap || verbMap[inf] !== undefined) {
@@ -1514,7 +1603,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
 
 
   /**
-   * Particulas Grammatic e Contractiones Obligatori (IALA §17, §21, §54)
+   * Particulas Grammatical e Contractiones Obligatori (IALA §17, §21, §54)
    */
   const GRAMMAR_PARTICLES = {
     'al': { pos: 'prep + art def', root: 'a + le', desc: 'Contraction obligatori del preposition "a" con le articulo definite "le" (IALA §17)' },
@@ -1558,9 +1647,9 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
   };
 
   /**
-   * Analisis Contextual y Gramatical de un Token sin hardcoding de lemas
-   * - Desambiguacion sintactica pura por reglas generales de la lengua
-   * - Si una palabra no existe, activa la deteccion de errores y calcula sugerencias por distancia de Levenshtein
+   * Analyse Contextual e Grammatical de un Token sin codification rigide de lemas
+   * - Disambiguation syntactic pur per regulas general del lingua
+   * - Si un parola non existe, activa le detection de errores e computa suggestiones per distantia de Levenshtein
    */
   function analyzeTextTokenContextual(tokenInfo: { tok: string; low: string; prevLow?: string; nextLow?: string }, dictMulti: Record<string, unknown[]>, verbMap: Record<string, number>, adjMap: Record<string, number>, sbMap: Record<string, number>, vocabList: string[]): unknown {
     const orig = tokenInfo.tok;
@@ -1582,7 +1671,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
       };
     }
 
-    // 1. Contractiones obligatori de preposiciones con articulo (IALA §17)
+    // 1. Contractiones obligatori de prepositiones con articulo (IALA §17)
     if ((GRAMMAR_PARTICLES as Record<string, unknown>)[low]) {
       const part = (GRAMMAR_PARTICLES as Record<string, { root: string; pos: string; desc: string }>)[low]!;
       return {
@@ -1619,8 +1708,8 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
     }
     if (low.endsWith('mente') && low.length > 5) {
       const candBase = low.slice(0, -5);
-      // Casos: adj terminado en vocal directa (regular -> regularmente, rapide -> rapidemente)
-      // o adj en consonante que toma -e- intermedia (clar -> clarmente, regular -> regularmente)
+      // Casos: adj terminate in vocal directe (regular -> regularmente, rapide -> rapidemente)
+      // o adj in consonante que recipe -e- intermedie (clar -> clarmente, regular -> regularmente)
       const candE = candBase.endsWith('e') ? candBase.slice(0, -1) : null;
       let matchedAdj = null;
       if (adjMap && adjMap[candBase] !== undefined) matchedAdj = candBase;
@@ -1668,7 +1757,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
       }
     }
 
-    // 1.b Participios passatos collaterales o classicos (extraite -> extraher, extracte, scripte, etc.)
+    // 1.b Participios passatos collateral o classic (extraite -> extraher, extracte, scripte, etc.)
     if ((COLLATERAL_PARTICIPLES as Record<string, unknown>)[low]) {
       const cp = (COLLATERAL_PARTICIPLES as Record<string, { inf: string; desc: string }>)[low]!;
       return {
@@ -1711,7 +1800,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
       }
     }
 
-    // 2. Acronymos o Siglas Internacionales (IALA, UMI, UNESCO, etc.)
+    // 2. Acronymos o Siglas International (IALA, UMI, UNESCO, etc.)
     if (/^[A-Z]{2,}$/.test(orig)) {
       return {
         word: orig, root: orig, pos: 'npr (acronymo)', status: 'npr',
@@ -1720,8 +1809,8 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
       };
     }
 
-    // 3. Regla Sintactica de Grado Comparative o Superlativo (IALA §34)
-    // Si la palabra admite funcion adverbial (como 'plus') y precede a un adjetivo o sigue a 'le' / 'un'
+    // 3. Regula Syntactic de Grado Comparative o Superlativo (IALA §34)
+    // Si le parola admitte function adverbial (como 'plus') e precede un adjectivo o seque 'le' / 'un'
     if (dictMulti[low]) {
       const hasAdv = (dictMulti[low] as string[][]).some((e: string[]) => (e[1] ?? '').includes('adv'));
       if (hasAdv && (adjMap[nextLow] !== undefined || ['le', 'un', 'del', 'al'].includes(prevLow))) {
@@ -1735,9 +1824,9 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
       }
     }
 
-    // 4. Regla Sintactica de Posicion Adjetival Pospuesta (IALA §31, §33)
-    // En Interlingua la posicion normal del adjetivo es pospuesta al sustantivo que califica.
-    // Si la palabra tiene entrada como adjetivo y sigue a un sustantivo, actua como adjetivo.
+    // 4. Regula Syntactic de Position Adjectival Posponite (IALA §31, §33)
+    // In Interlingua le position normal del adjectivo es posponite al substantivo que ille qualifica.
+    // Si le parola ha entrata como adjectivo e seque un substantivo, ille age como adjectivo.
     if (dictMulti[low]) {
       const hasAdj = (dictMulti[low] as string[][]).some((e: string[]) => (e[1] ?? '').includes('adj'));
       if (hasAdj && sbMap[prevLow] !== undefined) {
@@ -1772,7 +1861,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
       }
     }
 
-    // 5. Regla Morphologica Universal de Verbo en Tiempo Presente e Imperativo (IALA §99)
+    // 5. Regula Morphologic Universal de Verbo in Tempore Presente e Imperativo (IALA §99)
     // In Interlingua le presente e imperativo regular se forma sin exception per omitter le -r final del infinitivo.
     // Si le parola + "r" es un infinitivo valide in le lexico e non ha entrata directe prioritari (o si es in contexto verbal):
     const candInf = low + 'r';
@@ -1799,7 +1888,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
       }
     }
 
-    // 6. Formas Verbales Conjugadas Generales (IALA §§94-115)
+    // 6. Formas Verbal Conjugate General (IALA §§94-115)
     // Passato simple: -ava, -eva, -iva (§102)
     if (low.endsWith('ava') || low.endsWith('eva') || low.endsWith('iva')) {
       const inf = low.slice(0, -2) + 'r';
@@ -1843,7 +1932,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
         };
       }
     }
-    // Condicional: -area, -erea, -irea (§107)
+    // Conditional: -area, -erea, -irea (§107)
     if (low.endsWith('area') || low.endsWith('erea') || low.endsWith('irea')) {
       const inf = low.slice(0, -2);
       if (verbMap[inf] !== undefined) {
@@ -1909,34 +1998,34 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
       }
     }
 
-    // 7. Plurales regulares y doctos (§§21-25)
+    // 7. Plurales regular e docte (IALA §25)
     if (low.endsWith('hes') && low.length > 3) {
-      const cand = low.slice(0, -3);
+      const cand = low.slice(0, -3) + 'c';
       if (dictMulti[cand]) {
         return {
           word: orig, root: cand, pos: 'sb (pl)', status: 'plural',
-          desc: `Plural (-c → -ches) de "${cand}" (IALA §21)`,
-          dictEntry: dictMulti[cand][0]
-        };
-      }
-    }
-    if (low.endsWith('eses') || low.endsWith('ites')) {
-      const cand = low.slice(0, -2) + 'is';
-      if (dictMulti[cand]) {
-        return {
-          word: orig, root: cand, pos: 'sb (pl)', status: 'plural',
-          desc: `Plural docte in -is (-is → -es) de "${cand}" (IALA §22)`,
+          desc: `Plural regular (-c -> -ches) de "${cand}" (IALA §25)`,
           dictEntry: dictMulti[cand][0]
         };
       }
     }
     if (low.endsWith('es') && low.length > 3) {
+      // 1. Plural de vocabulos docte in -is (analysis -> analyses, genesis -> geneses)
+      const candIs = low.slice(0, -2) + 'is';
+      if (dictMulti[candIs]) {
+        return {
+          word: orig, root: candIs, pos: 'sb (pl)', status: 'plural',
+          desc: `Plural docte in -is (-is -> -es) de "${candIs}" (IALA §25)`,
+          dictEntry: dictMulti[candIs][0]
+        };
+      }
+      // 2. Plural regular consonantic in -es
       const cand = low.slice(0, -2);
       if (dictMulti[cand]) {
         const p = (dictMulti[cand] as string[][])[0]![1]!;
         return {
           word: orig, root: cand, pos: `${p} (pl)`, status: 'plural',
-          desc: `Plural consonantic (-es) de "${cand}" (IALA §21)`,
+          desc: `Plural consonantic (-es) de "${cand}" (IALA §25)`,
           dictEntry: (dictMulti[cand] as string[][])[0]!
         };
       }
@@ -1947,13 +2036,13 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
         const p = (dictMulti[cand] as string[][])[0]![1]!;
         return {
           word: orig, root: cand, pos: `${p} (pl)`, status: 'plural',
-          desc: `Plural vocalic (-s) de "${cand}" (IALA §21)`,
+          desc: `Plural vocalic (-s) de "${cand}" (IALA §25)`,
           dictEntry: dictMulti[cand][0]
         };
       }
     }
 
-    // 8. Entrada directa en el Diccionario
+    // 8. Entrata directe in le Dictionario
     if (dictMulti[low]) {
       const entries = dictMulti[low] as string[][];
       let chosen = entries[0]!;
@@ -1996,8 +2085,8 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
       };
     }
 
-    // 10. Nombres propios capitalizados (Alexander, Gode, Hugh, Blair, etc.) [IALA §14, §29]
-    // ECMAScript best practice: O(1) Set lookup para descartar pronombres/articulos/conectores de inicio de oracion
+    // 10. Nomines proprie capitalisate (Alexander, Gode, Hugh, Blair, etc.) [IALA §14, §29]
+    // Praxi optime ECMAScript: O(1) Set lookup pro excluder pronomines/articulos/connectores de initio de phrase
     if (/^[A-ZÁÉÍÓÚ][a-zà-ÿ]+$/.test(orig) && !IALA_FUNCTION_WORDS.has(orig)) {
       return {
         word: orig, root: orig, pos: 'npr', status: 'npr',
@@ -2025,7 +2114,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
       }
     }
 
-    // 10.c Derivation regulari con suffixos productivos (IALA §§136-154) - e.g. nutritionista -> nutrition + -ista
+    // 10.c Derivation regulari con suffixos productive (IALA §§136-154) - e.g. nutritionista -> nutrition + -ista
     for (const sfx of PRODUCTIVE_SUFFIXES) {
       if (low.endsWith(sfx.suffix) && low.length > sfx.suffix.length + 2) {
         const rawStem = low.slice(0, -sfx.suffix.length);
@@ -2055,8 +2144,8 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
       }
     }
 
-    // 11. Palabra Desconocida / Posible Error Ortografico
-    // Calcula sugerencias de Levenshtein en vivo contra el corpus de 51.500 palabras
+    // 11. Parola Non Registrate / Possibile Error Orthographic
+    // Computa suggestiones de Levenshtein in tempore real contra le corpus de 51.500 parolas
     const suggestions = findSpellingSuggestions(low, vocabList, 2, 3);
     return {
       word: orig, root: orig, pos: 'non registrate', status: 'unknown',
@@ -2086,7 +2175,7 @@ import { INTERLINGUA_STRESS_EXCEPTIONS } from './data/interlinguaExceptions';
 
 })();
 
-// Exportacion ESM publica del modulo
+// Exportation ESM public del modulo
 export const IALAConjugator = _IALAConjugatorImpl;
 
 // Retrocompatibilitate con scripts global (script tags sin bundler)

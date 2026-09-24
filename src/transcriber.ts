@@ -233,6 +233,17 @@ const transcribeWordInterlingua = function(word: string): string {
     }
   }
 
+  if (INTERLINGUA_STRESS_EXCEPTIONS[baseWord] === undefined && numVowels >= 2) {
+    // Regula IALA §107: Tempore Futuro Simple (-ara, -era, -ira) -> oxytono
+    if (/(?:[aei]ra)$/.test(baseWord)) {
+      stressedCharIdx = baseVowelIndices[numVowels - 1]!;
+    }
+    // Regula IALA §107: Conditional (-area, -erea, -irea) -> paroxytono super le 'e'
+    else if (/(?:[aei]rea)$/.test(baseWord) && numVowels >= 3) {
+      stressedCharIdx = baseVowelIndices[numVowels - 2]!;
+    }
+  }
+
   if (INTERLINGUA_STRESS_EXCEPTIONS[baseWord] === undefined && numVowels >= 3) {
     if (baseWord.endsWith('le') || baseWord.endsWith('ne') || baseWord.endsWith('re')) {
       const suffixLen = 2;
